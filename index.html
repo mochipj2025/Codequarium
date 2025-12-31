@@ -22,10 +22,26 @@
             background-color: var(--bg);
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
-            line-height: 1.6;
+            line-height: 1.8;
             overflow-x: hidden;
             width: 100%;
         }
+
+        /* --- タイポグラフィ最適化 --- */
+        h1, h2, h3 { 
+            text-wrap: balance;
+            word-break: keep-all; 
+            overflow-wrap: anywhere;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+        }
+        p { 
+            text-wrap: pretty;
+            max-width: 700px;
+            color: var(--text-dim);
+            font-weight: 300;
+        }
+        .keep-together { display: inline-block; }
 
         /* --- エフェクト --- */
         #vignette {
@@ -39,17 +55,13 @@
             z-index: 1; pointer-events: none;
         }
 
-        /* --- レイアウト構造 --- */
-        section { padding: 80px 5%; position: relative; z-index: 20; }
-        .container { max-width: 1200px; margin: 0 auto; }
+        /* --- レイアウト --- */
+        section { padding: 100px 8%; position: relative; z-index: 20; }
+        .container { max-width: 1100px; margin: 0 auto; }
 
-        h1, h2, h3 { font-weight: 100; letter-spacing: 0.3em; text-transform: uppercase; }
-        h1 { font-size: clamp(2.2rem, 8vw, 5.5rem); margin-bottom: 10px; line-height: 1.1; }
+        h1 { font-size: clamp(2.2rem, 8vw, 5.5rem); margin-bottom: 10px; line-height: 1.1; font-weight: 100; }
         .hero-sub { font-size: 0.7rem; color: var(--accent); letter-spacing: 0.4em; margin-bottom: 30px; }
 
-        p { font-weight: 300; color: var(--text-dim); margin-bottom: 20px; max-width: 700px; }
-
-        /* --- メインビジュアライザー (Hero) --- */
         #hero {
             min-height: 100vh;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -69,7 +81,6 @@
             margin: 0 auto;
         }
 
-        /* アスペクト比クラス */
         #visualizer-mount.ratio-16-9 { width: 90vw; height: calc(90vw * 9 / 16); max-width: 1100px; max-height: 620px; }
         #visualizer-mount.ratio-4-5 { width: 85vw; height: calc(85vw * 5 / 4); max-width: 600px; max-height: 750px; }
 
@@ -82,32 +93,38 @@
         canvas { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
         .hero-controls {
-            margin-top: 30px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; z-index: 30;
+            margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; z-index: 30;
             max-width: 95vw;
         }
 
-        /* --- ステップガイド --- */
-        .guide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 40px; }
-        .guide-item { padding: 20px; border-left: 1px solid rgba(255,255,255,0.1); }
-        .guide-num { font-family: 'JetBrains+Mono', monospace; color: var(--accent); font-size: 0.8rem; margin-bottom: 10px; display: block; }
-        .guide-item h3 { font-size: 0.75rem; margin-bottom: 10px; color: #fff; letter-spacing: 0.1em; }
-        .guide-item p { font-size: 0.8rem; margin: 0; }
+        /* --- UI Components --- */
+        .guide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 30px; margin-top: 50px; }
+        .guide-item { padding: 25px; border-left: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+        .guide-item:hover { border-left-color: var(--accent); background: rgba(255,255,255,0.01); }
+        .guide-num { font-family: 'JetBrains+Mono', monospace; color: var(--accent); font-size: 0.8rem; margin-bottom: 15px; display: block; opacity: 0.8; }
+        .guide-item h3 { font-size: 0.75rem; margin-bottom: 12px; color: #fff; letter-spacing: 0.15em; line-height: 1.4; }
+        .guide-item p { font-size: 0.8rem; }
+
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 60px; }
+        .feature-card { background: var(--card-bg); padding: 35px; border: 1px solid rgba(255, 255, 255, 0.04); transition: 0.4s; }
+        .feature-card:hover { border-color: var(--accent); transform: translateY(-8px); background: rgba(51, 102, 255, 0.02); }
+        .feature-card h3 { margin-bottom: 15px; font-size: 0.85rem; color: #fff; }
 
         .btn-zen {
             font-family: 'JetBrains+Mono', monospace; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
             color: var(--text-dim); background: transparent; border: 1px solid rgba(255, 255, 255, 0.12);
-            padding: 10px 18px; cursor: pointer; transition: 0.3s;
+            padding: 12px 20px; cursor: pointer; transition: 0.3s;
             outline: none;
         }
         .btn-zen:hover { color: #fff; border-color: var(--accent); background: rgba(51, 102, 255, 0.08); }
-        .btn-zen:active { transform: scale(0.95); }
+        .btn-zen.primary { border-color: var(--accent); color: #fff; }
 
         .mystic-link {
-            display: inline-block; margin-top: 40px; padding: 18px 40px; background: #fff; color: #000;
-            text-decoration: none; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.7rem;
+            display: inline-block; margin-top: 40px; padding: 18px 45px; background: #fff; color: #000;
+            text-decoration: none; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.75rem;
             transition: 0.3s;
         }
-        .mystic-link:hover { background: var(--accent); color: white; }
+        .mystic-link:hover { background: var(--accent); color: white; transform: scale(1.05); }
 
         .mount-hud {
             position: absolute; top: 15px; left: 20px; right: 20px;
@@ -115,15 +132,14 @@
             z-index: 20; pointer-events: none;
             font-family: 'JetBrains+Mono', monospace; font-size: 7px; opacity: 0.5;
         }
-        #display-title { letter-spacing: 0.3em; text-transform: uppercase; }
-
+        
         #ui-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
 
         @media (max-width: 600px) {
             #visualizer-mount.ratio-16-9 { width: 95vw; height: calc(95vw * 9 / 16); }
             #visualizer-mount.ratio-4-5 { width: 92vw; height: 115vw; }
-            section { padding: 60px 20px; }
-            .btn-zen { padding: 8px 12px; font-size: 7px; }
+            section { padding: 60px 25px; }
+            .btn-zen { padding: 8px 14px; font-size: 7px; }
         }
     </style>
 </head>
@@ -134,9 +150,12 @@
 
 <div id="hero">
     <div class="container" style="text-align: center;">
-        <div class="hero-sub">The Coding Aquarium Project / コードで描かれた水槽</div>
+        <div class="hero-sub">The Coding Aquarium Project / <span class="keep-together">コードで描かれた水槽</span></div>
         <h1>Codequarium</h1>
-        <p style="margin: 0 auto 35px;">計算が呼吸し、旋律が鼓動へと変わる。<br>コードで描かれた深淵の生態系。</p>
+        <p style="margin: 0 auto 35px; max-width: 500px;">
+            <span class="keep-together">計算が呼吸し、</span><span class="keep-together">旋律が鼓動へと変わる。</span><br>
+            <span class="keep-together">コードで描かれた</span><span class="keep-together">深淵の生態系。</span>
+        </p>
     </div>
 
     <!-- メインマウント -->
@@ -151,37 +170,68 @@
 
     <!-- コントロール -->
     <div class="hero-controls">
+        <!-- 再生・一時停止 -->
+        <button class="btn-zen primary" id="play-pause-btn" onclick="togglePlayback()">Play</button>
+        
         <button class="btn-zen" onclick="loadSample('track1.mp3', 'コーヒーの湯気')">Coffee Steam</button>
         <button class="btn-zen" onclick="loadSample('track2.mp3', '雨上がりブレンド')">After Rain</button>
         <button class="btn-zen" onclick="loadSample('track3.mp3', '午後のカップと君')">Afternoon Cup</button>
         <label class="btn-zen">Import MP3 <input type="file" id="file-input" accept="audio/*" style="display:none;"></label>
-        <button class="btn-zen" id="aspect-btn" style="border-color: rgba(100,150,255,0.4); color: #fff;">Change Layout</button>
+        <button class="btn-zen" id="aspect-btn" style="border-color: rgba(100,150,255,0.4);">Change Layout</button>
     </div>
 </div>
 
 <section id="how-to">
     <div class="container">
-        <h2>How to Interact / 操作方法</h2>
+        <h2>How to Interact / <span class="keep-together">操作方法</span></h2>
         <div class="guide-grid">
             <div class="guide-item">
                 <span class="guide-num">01</span>
-                <h3>Invoke Sound / 音楽を呼び覚ます</h3>
-                <p>ライブラリから曲を選ぶか、手持ちのMP3を読み込ませることで、静寂に包まれた水槽が生命を宿し始めます。</p>
+                <h3>Invoke Sound / <span class="keep-together">音楽を呼び覚ます</span></h3>
+                <p>
+                    <span class="keep-together">ライブラリから</span><span class="keep-together">曲を選ぶか、</span><span class="keep-together">手持ちのファイルを</span><span class="keep-together">読み込ませることで、</span><span class="keep-together">静寂に包まれた</span><span class="keep-together">水槽が生命を</span><span class="keep-together">宿し始めます。</span>
+                </p>
             </div>
             <div class="guide-item">
                 <span class="guide-num">02</span>
-                <h3>Manipulate Fluid / 流体をかき混ぜる</h3>
-                <p>画面内のスライムをドラッグしてかき混ぜてください。物理演算による粘性と、放した瞬間の慣性を体験できます。</p>
+                <h3>Manipulate Fluid / <span class="keep-together">流体をかき混ぜる</span></h3>
+                <p>
+                    <span class="keep-together">画面内のスライムを</span><span class="keep-together">ドラッグして</span><span class="keep-together">かき混ぜてください。</span><span class="keep-together">物理演算による</span><span class="keep-together">粘性と、</span><span class="keep-together">放した瞬間の</span><span class="keep-together">慣性を体験できます。</span>
+                </p>
             </div>
             <div class="guide-item">
                 <span class="guide-num">03</span>
-                <h3>Observe Evolution / 進化を観察する</h3>
-                <p>音楽のエネルギーが高まると、核は最大16個まで自己分裂します。それぞれの個体が独立した意思を持つかのように泳ぎ回ります。</p>
+                <h3>Observe Evolution / <span class="keep-together">進化を観察する</span></h3>
+                <p>
+                    <span class="keep-together">音楽のエネルギーが</span><span class="keep-together">高まると、</span><span class="keep-together">核は最大16個まで</span><span class="keep-together">自己分裂します。</span><span class="keep-together">それぞれの個体が</span><span class="keep-together">独立した意思を</span><span class="keep-together">持つかのように</span><span class="keep-together">泳ぎ回ります。</span>
+                </p>
             </div>
             <div class="guide-item">
                 <span class="guide-num">04</span>
-                <h3>Feel the Tilt / 空間の傾きを感じる</h3>
-                <p>マウス（またはスマホの傾き）に合わせて、水槽全体が3Dで傾斜します。奥行きのある視覚効果を楽しめます。</p>
+                <h3>Feel the Tilt / <span class="keep-together">空間の傾きを感じる</span></h3>
+                <p>
+                    <span class="keep-together">マウスに合わせて、</span><span class="keep-together">水槽全体が3Dで</span><span class="keep-together">傾斜します。</span><span class="keep-together">画面から離れると</span><span class="keep-together">影響は消え、</span><span class="keep-together">世界は元の</span><span class="keep-together">静止状態へと</span><span class="keep-together">戻ります。</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="features" style="background: rgba(255,255,255,0.01);">
+    <div class="container">
+        <h2>System Ecosystem / <span class="keep-together">生態系システム</span></h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>Bio-Fluid Physics / <span class="keep-together">生物流体物理学</span></h3>
+                <p><span class="keep-together">FFT周波数解析と</span><span class="keep-together">メタボール・フィルターにより、</span><span class="keep-together">軽量でありながら</span><span class="keep-together">重厚な流体質感を</span><span class="keep-together">ブラウザ上で</span><span class="keep-together">実現しました。</span></p>
+            </div>
+            <div class="feature-card">
+                <h3>Spectral Synthesis / <span class="keep-together">スペクトル合成</span></h3>
+                <p><span class="keep-together">音の高さ（ピッチ）を</span><span class="keep-together">解析し、</span><span class="keep-together">空間の色温度を</span><span class="keep-together">リアルタイムに制御。</span><span class="keep-together">音の感情を色彩として</span><span class="keep-together">可視化します。</span></p>
+            </div>
+            <div class="feature-card">
+                <h3>Vortex Circulation / <span class="keep-together">渦状循環</span></h3>
+                <p><span class="keep-together">背景に漂う粒子は</span><span class="keep-together">海洋循環を模した</span><span class="keep-together">流体場に従って動きます。</span><span class="keep-together">キック音に合わせた</span><span class="keep-together">拍動が没入感を</span><span class="keep-together">高めます。</span></p>
             </div>
         </div>
     </div>
@@ -189,10 +239,14 @@
 
 <section id="footer-section" style="text-align: center;">
     <div class="container">
-        <h2>Enter the Void / 深淵へ</h2>
-        <p style="margin: 0 auto 10px;">Codequariumは、音楽と計算が融合する実験的なデジタル水槽です。</p>
-        <p style="font-size: 11px; opacity: 0.5; margin-bottom: 30px;">※サンプル再生はローカルサーバー経由で動作します。直接開く場合は「Import MP3」をご利用ください。</p>
-        <a href="https://www.threads.net/@hogushiya_kida?xmt=AQF0jg1JRo6B5FOakS_Gv36JaTHkwzBeYu6f729XkxglZCo" class="mystic-link" target="_blank">Connect on Threads / Threadsで繋がる</a>
+        <h2>Enter the Void / <span class="keep-together">深淵へ</span></h2>
+        <p style="margin: 0 auto 10px;">
+            <span class="keep-together">Codequariumは、</span><span class="keep-together">音楽と計算が</span><span class="keep-together">融合する</span><span class="keep-together">実験的な</span><span class="keep-together">デジタル水槽です。</span>
+        </p>
+        <p style="font-size: 11px; opacity: 0.5; margin-bottom: 30px;">
+            <span class="keep-together">※サンプル再生は</span><span class="keep-together">ローカルサーバー経由で</span><span class="keep-together">動作します。</span>
+        </p>
+        <a href="https://www.threads.net/@hogushiya_kida?xmt=AQF0jg1JRo6B5FOakS_Gv36JaTHkwzBeYu6f729XkxglZCo" class="mystic-link" target="_blank">Connect on Threads / <span class="keep-together">Threadsで繋がる</span></a>
     </div>
 </section>
 
@@ -216,14 +270,15 @@
     const displayTitle = document.getElementById('display-title');
     const fileInput = document.getElementById('file-input');
     const aspectBtn = document.getElementById('aspect-btn');
+    const playPauseBtn = document.getElementById('play-pause-btn');
 
     let audioCtx, analyser, dataArray, prevDataArray, source, audioBuffer;
     let isInitialized = false, isPlaying = false;
     let startTime = 0, pauseOffset = 0;
     let currentMode = 'FLOW', globalVol = 0;
     
-    // マウス位置管理
-    let mouse = { x: 0, y: 0, globalX: 0, globalY: 0, active: false, down: false };
+    // マウス・インタラクション
+    let mouse = { x: 0, y: 0, globalX: 0, globalY: 0, active: false, down: false, influence: 0 };
     let dragNode = null; 
     let rotateX = 0, rotateY = 0;
 
@@ -241,12 +296,6 @@
             this.x = x; this.y = y; this.vx = 0; this.vy = 0;
             this.targetX = x; this.targetY = y;
         }
-        teleport(x, y) {
-            if (!isFinite(x) || !isFinite(y)) return;
-            this.x = x; this.y = y; this.targetX = x; this.targetY = y;
-            this.vx = 0; this.vy = 0;
-        }
-        sync(x, y) { if (isFinite(x) && isFinite(y)) { this.targetX = x; this.targetY = y; } }
         solve(dynamicBoost = 0) {
             const dx = this.targetX - this.x;
             const dy = this.targetY - this.y;
@@ -261,11 +310,8 @@
 
     class SwarmNode {
         constructor(id, x, y) {
-            this.id = id;
-            this.p = new PhysicalPoint(x, y);
-            this.radius = 12;
-            this.noiseSeedX = Math.random() * 2000;
-            this.noiseSeedY = Math.random() * 2000;
+            this.id = id; this.p = new PhysicalPoint(x, y); this.radius = 12;
+            this.noiseSeedX = Math.random() * 2000; this.noiseSeedY = Math.random() * 2000;
             this.isDragging = false;
         }
         update(nodeVol, flux, nodes) {
@@ -280,28 +326,26 @@
                 let tx = cx + Math.sin(t * (0.6 + this.id * 0.08) + this.noiseSeedX) * (canvas.width * 0.32);
                 let ty = cy + Math.cos(t * (0.5 + this.id * 0.12) + this.noiseSeedY) * (canvas.height * 0.32);
                 
-                if (mouse.active && !mouse.down) {
+                if (mouse.influence > 0.01) {
                     const dx = mouse.x - this.p.x, dy = mouse.y - this.p.y;
                     const d = Math.sqrt(dx * dx + dy * dy) || 0.01;
-                    if (d < 300) { tx += (dx / d) * 45; ty += (dy / d) * 45; }
-                }
-                if (flux > 0.22) {
-                    const a = Math.random() * Math.PI * 2;
-                    this.p.vx += Math.cos(a) * flux * 3.8; this.p.vy += Math.sin(a) * flux * 3.8;
+                    if (d < 300) { 
+                        const force = (1 - d / 300) * 45 * mouse.influence;
+                        tx += (dx / d) * force; ty += (dy / d) * force; 
+                    }
                 }
                 nodes.forEach(other => {
                     if (other === this) return;
                     const dx = other.p.x - this.p.x, dy = other.p.y - this.p.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
+                    const dist = Math.sqrt(dx*dx + dy*dy) || 0.01;
                     const minDist = (this.radius + other.radius) * 1.25;
                     if (dist < minDist) {
                         const push = (minDist - dist) * 0.025;
                         this.p.vx -= (dx / dist) * push; this.p.vy -= (dy / dist) * push;
-                    } else if (dist < 220) {
-                        this.p.vx += (dx / dist) * 0.0001; this.p.vy += (dy / dist) * 0.0001;
                     }
                 });
-                this.p.sync(tx, ty); this.p.solve(flux * 0.45);
+                this.p.targetX = tx; this.p.targetY = ty;
+                this.p.solve(flux * 0.45);
             }
             const pad = this.radius + 35;
             if (this.p.x < pad) { this.p.vx = Math.abs(this.p.vx) * 0.6; this.p.x = pad; }
@@ -310,11 +354,10 @@
             if (this.p.y > canvas.height - pad) { this.p.vy = -Math.abs(this.p.vy) * 0.6; this.p.y = canvas.height - pad; }
             
             const targetR = 26 + nodeVol * 80 + flux * 135;
-            const lerpS = targetR > this.radius ? 0.3 : 0.08;
-            this.radius += (targetR - this.radius) * lerpS;
+            this.radius += (targetR - this.radius) * (targetR > this.radius ? 0.3 : 0.08);
         }
         draw(hue) {
-            if (!isFinite(this.p.x) || !isFinite(this.p.y) || this.radius <= 1) return;
+            if (!isFinite(this.p.x) || this.radius <= 1) return;
             const g = ctx.createRadialGradient(this.p.x, this.p.y, 0, this.p.x, this.p.y, this.radius);
             const intensity = (this.isDragging || currentMode === 'BANG') ? 1.0 : 0.68;
             g.addColorStop(0, `hsla(${hue}, 80%, 92%, ${intensity})`); 
@@ -328,36 +371,24 @@
     class BioParticle {
         constructor() { this.init(true); }
         init(randomPos = false) {
-            if (randomPos) { 
-                this.x = Math.random() * bgCanvas.width; this.y = Math.random() * bgCanvas.height; 
-            } else { 
-                const a = Math.random()*Math.PI*2, d = Math.random()*150; 
-                this.x = (bgCanvas.width/2) + Math.cos(a)*d; this.y = (bgCanvas.height/2) + Math.sin(a)*d; 
-            }
+            if (randomPos) { this.x = Math.random() * bgCanvas.width; this.y = Math.random() * bgCanvas.height; } 
+            else { const a = Math.random()*Math.PI*2, d = Math.random()*150; this.x = (bgCanvas.width/2) + Math.cos(a)*d; this.y = (bgCanvas.height/2) + Math.sin(a)*d; }
             this.z = Math.random() * 2 + 0.5; this.baseAngle = Math.random() * Math.PI * 2;
             this.speed = (Math.random() * 0.12 + 0.05) / this.z; this.size = Math.random() * 1.5 + 0.4;
             this.alpha = Math.random() * 0.2 + 0.1; this.flickerS = Math.random() * 0.03 + 0.01; this.vx = 0; this.vy = 0;
         }
         update(bass) {
-            const centerX = bgCanvas.width / 2, centerY = bgCanvas.height / 2, t = Date.now() * 0.001;
+            const cx = bgCanvas.width / 2, cy = bgCanvas.height / 2, t = Date.now() * 0.001;
             const flowA = t * (0.04 / this.z) + this.baseAngle;
             const flowX = Math.cos(flowA) * this.speed, flowY = Math.sin(flowA) * this.speed;
-            
-            // 音への反応
-            const dx = this.x - centerX, dy = this.y - centerY, dist = Math.sqrt(dx * dx + dy * dy) || 1;
+            const dx = this.x - cx, dy = this.y - cy, dist = Math.sqrt(dx*dx + dy*dy) || 1;
             this.vx += (dx / dist) * bass * 0.38;
             if (currentMode === 'BANG') { this.vx += (dx / dist) * 1.8; this.vy += (dy / dist) * 1.8; }
-            
-            // カーソルへの反応 (復元)
-            if (mouse.active) {
+            if (mouse.influence > 0.01) {
                 const mdx = this.x - mouse.globalX, mdy = this.y - mouse.globalY;
-                const mdist = Math.sqrt(mdx * mdx + mdy * mdy) || 1;
-                if (mdist < 300) {
-                    const f = (1 - mdist / 300) * 1.5;
-                    this.vx += (mdx / mdist) * f; this.vy += (mdy / mdist) * f;
-                }
+                const mdist = Math.sqrt(mdx*mdx + mdy*mdy) || 1;
+                if (mdist < 300) { const f = (1 - mdist/300) * 2.2 * mouse.influence; this.vx += (mdx/mdist)*f; this.vy += (mdy/mdist)*f; }
             }
-
             this.x += flowX + this.vx; this.y += flowY + this.vy; this.vx *= 0.93; this.vy *= 0.93;
             if (this.x < -200 || this.x > bgCanvas.width + 200 || this.y < -200 || this.y > bgCanvas.height + 200) this.init(false);
         }
@@ -386,27 +417,21 @@
         newNode.p.vx = (Math.random() - 0.5) * 6; newNode.p.vy = (Math.random() - 0.5) * 6;
         nodes.push(newNode);
     }
-    window.addEvolutionNode = addEvolutionNode;
 
     function syncSizes() {
         const oldW = canvas.width, oldH = canvas.height;
         bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight;
         const rect = mount.getBoundingClientRect();
-        
         if (rect && rect.width > 0) {
-            canvas.width = uiCanvas.width = rect.width; 
-            canvas.height = uiCanvas.height = rect.height;
-            
+            canvas.width = uiCanvas.width = rect.width; canvas.height = uiCanvas.height = rect.height;
             if (oldW > 0) {
                 const cx = canvas.width / 2, cy = canvas.height / 2;
                 const oldCX = oldW / 2, oldCY = oldH / 2;
                 nodes.forEach(n => {
                     const offX = n.p.x - oldCX, offY = n.p.y - oldCY;
-                    n.p.x = cx + offX * (canvas.width / oldW);
-                    n.p.y = cy + offY * (canvas.height / oldH);
+                    n.p.x = cx + offX * (canvas.width / oldW); n.p.y = cy + offY * (canvas.height / oldH);
                     const toffX = n.p.targetX - oldCX, toffY = n.p.targetY - oldCY;
-                    n.p.targetX = cx + toffX * (canvas.width / oldW);
-                    n.p.targetY = cy + toffY * (canvas.height / oldH);
+                    n.p.targetX = cx + toffX * (canvas.width / oldW); n.p.targetY = cy + toffY * (canvas.height / oldH);
                 });
             }
         }
@@ -416,114 +441,115 @@
         const rect = mount.getBoundingClientRect();
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        
-        // カード内のローカル座標
         mouse.x = clientX - rect.left; mouse.y = clientY - rect.top;
-        // 背景用のグローバル座標
         mouse.globalX = clientX; mouse.globalY = clientY;
-        
-        rotateY = ((clientX / window.innerWidth) - 0.5) * 8;
-        rotateX = ((clientY / window.innerHeight) - 0.5) * -8;
+        rotateY = ((clientX / window.innerWidth) - 0.5) * 8; rotateX = ((clientY / window.innerHeight) - 0.5) * -8;
     }
 
     mount.addEventListener('mousedown', (e) => {
         mouse.down = true; updateMousePos(e);
-        let minDist = 120, target = null;
-        nodes.forEach(n => { const d = Math.hypot(n.p.x - mouse.x, n.p.y - mouse.y); if (d < minDist) { minDist = d; target = n; } });
+        let target = null;
+        nodes.forEach(n => { if (Math.hypot(n.p.x - mouse.x, n.p.y - mouse.y) < 120) target = n; });
         if (target) { dragNode = target; dragNode.isDragging = true; }
     });
     window.addEventListener('mousemove', (e) => { updateMousePos(e); mouse.active = true; });
     window.addEventListener('mouseup', () => { mouse.down = false; if (dragNode) { dragNode.isDragging = false; dragNode = null; } });
-    
-    mount.addEventListener('touchstart', (e) => {
-        if (e.target.tagName !== 'BUTTON') e.preventDefault();
-        mouse.down = true; updateMousePos(e);
-        let target = null;
-        nodes.forEach(n => { if (Math.hypot(n.p.x - mouse.x, n.p.y - mouse.y) < 100) target = n; });
-        if (target) { dragNode = target; dragNode.isDragging = true; }
-    }, {passive: false});
-    window.addEventListener('touchmove', (e) => { if(mouse.down) e.preventDefault(); updateMousePos(e); }, {passive: false});
-    window.addEventListener('touchend', () => { mouse.down = false; if (dragNode) { dragNode.isDragging = false; dragNode = null; } });
+    mount.addEventListener('mouseleave', () => { mouse.active = false; });
 
-    // サンプルロード
+    // --- 音響コントロール ---
+    function startPlayback(offset) {
+        if (source) source.stop();
+        source = audioCtx.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        source.start(0, offset);
+        startTime = audioCtx.currentTime - offset;
+        isPlaying = true;
+        playPauseBtn.innerText = "Pause";
+        playPauseBtn.classList.add('primary');
+    }
+
+    function togglePlayback() {
+        if (!audioBuffer) return;
+        if (isPlaying) {
+            pauseOffset = audioCtx.currentTime - startTime;
+            source.stop();
+            isPlaying = false;
+            playPauseBtn.innerText = "Play";
+            playPauseBtn.classList.remove('primary');
+        } else {
+            startPlayback(pauseOffset % audioBuffer.duration);
+        }
+    }
+    window.togglePlayback = togglePlayback;
+
     function loadSample(fileName, label) {
-        fetch(fileName).then(res => {
-            if(!res.ok) throw new Error("CORS or 404");
-            return res.arrayBuffer();
-        }).then(buffer => {
+        fetch(fileName).then(res => res.arrayBuffer()).then(buffer => {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             audioCtx.decodeAudioData(buffer, (decoded) => {
                 audioBuffer = decoded; displayTitle.innerText = label; 
-                if (source) source.stop();
-                startPlayback(0); isInitialized = true;
+                pauseOffset = 0; startPlayback(0); isInitialized = true;
                 nodes = [new SwarmNode(0, canvas.width/2, canvas.height/2)]; lastEvolutionTime = 0;
             });
-        }).catch(err => {
-            console.warn("Sample Load Error. Please check file path or use Local Server.");
-        });
+        }).catch(err => console.warn("Sample Load Error."));
     }
     window.loadSample = loadSample;
-
-    function startPlayback(offset) {
-        source = audioCtx.createBufferSource(); source.buffer = audioBuffer;
-        analyser = audioCtx.createAnalyser(); analyser.fftSize = 512;
-        source.connect(analyser); analyser.connect(audioCtx.destination);
-        source.start(0, offset); startTime = audioCtx.currentTime - offset; isPlaying = true; 
-    }
 
     fileInput.onchange = (e) => {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const reader = new FileReader();
         reader.onload = (ev) => {
             audioCtx.decodeAudioData(ev.target.result, (buf) => {
-                audioBuffer = buf; if(source) source.stop(); startPlayback(0); isInitialized = true;
+                audioBuffer = buf; displayTitle.innerText = e.target.files[0].name;
+                pauseOffset = 0; startPlayback(0); isInitialized = true;
                 nodes = [new SwarmNode(0, canvas.width/2, canvas.height/2)]; lastEvolutionTime = 0;
-                displayTitle.innerText = e.target.files[0].name;
             });
         };
         reader.readAsArrayBuffer(e.target.files[0]);
     };
 
-    // レイアウトチェンジ
     aspectBtn.onclick = () => {
         const is169 = mount.classList.contains('ratio-16-9');
-        mount.classList.remove('ratio-16-9', 'ratio-4-5');
-        mount.classList.add(is169 ? 'ratio-4-5' : 'ratio-16-9');
-        
+        mount.classList.remove('ratio-16-9', 'ratio-4-5'); mount.classList.add(is169 ? 'ratio-4-5' : 'ratio-16-9');
         let animStart = null;
-        function step(ts) {
-            if(!animStart) animStart = ts;
-            syncSizes(); 
-            if (ts - animStart < 1300) requestAnimationFrame(step); 
-        }
+        function step(ts) { if(!animStart) animStart = ts; syncSizes(); if (ts - animStart < 1300) requestAnimationFrame(step); }
         requestAnimationFrame(step);
     };
 
     function triggerBang() {
         currentMode = 'BANG';
         if (nodes.length < MAX_NODES) addEvolutionNode();
-        nodes.forEach(n => { n.p.vx += (Math.random()-0.5) * 0.35; n.p.vy += (Math.random()-0.5) * 0.35; });
+        nodes.forEach(n => { n.p.vx += (Math.random()-0.5)*0.35; n.p.vy += (Math.random()-0.5)*0.35; });
         setTimeout(() => { if (currentMode === 'BANG') currentMode = 'FLOW'; }, 10000);
     }
 
     function animate() {
         requestAnimationFrame(animate);
+        
+        // インタラクション減衰
+        if (mouse.active) mouse.influence += (1 - mouse.influence) * 0.1;
+        else { mouse.influence += (0 - mouse.influence) * 0.05; rotateX *= 0.95; rotateY *= 0.95; }
+
         if (isInitialized && isPlaying) { 
             analyser.getByteFrequencyData(dataArray); 
             const current = audioCtx.currentTime - startTime;
             if (current > lastEvolutionTime + EVOLUTION_INTERVAL && nodes.length < MAX_NODES) {
                 addEvolutionNode(); lastEvolutionTime = current;
             }
+            if (current >= audioBuffer.duration) { isPlaying = false; playPauseBtn.innerText = "Play"; pauseOffset = 0; }
         } else { dataArray.fill(0); }
         
-        let s = 0, f = 0, b = 0, p = 0, pIndex = 0;
+        let s = 0, f = 0, b = 0, pIndex = 0;
         for (let i = 0; i < dataArray.length; i++) { 
             s += dataArray[i]; if (i < 15) b += dataArray[i];
-            f += Math.max(0, dataArray[i] - prevDataArray[i]); 
-            if (dataArray[i] > p) { p = dataArray[i]; pIndex = i; }
+            f += Math.max(0, dataArray[i] - (prevDataArray ? prevDataArray[i] : 0)); 
+            if (dataArray[i] > dataArray[pIndex]) { pIndex = i; }
         }
         const avg = s / dataArray.length / 255; const bassAvg = b / 15 / 255; const fAvg = f / dataArray.length / 255;
-        globalVol = avg; prevDataArray.set(dataArray);
+        globalVol = avg; 
+        if (!prevDataArray) prevDataArray = new Uint8Array(256);
+        prevDataArray.set(dataArray);
 
         const hue = (pIndex / 128) * 360 + (Date.now() * 0.003 % 360);
         if (isInitialized) {
@@ -542,12 +568,9 @@
         
         mount.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
         nodeDisplay.innerText = `NODES: ${nodes.length}`;
-
-        nodes.forEach((n, i) => { 
-            const nodeVol = isInitialized ? dataArray[i % 32] / 255 : 0;
-            n.update(nodeVol, fAvg, nodes); n.draw(hue); 
-        });
+        nodes.forEach((n, i) => { n.update(isInitialized ? dataArray[i % 32]/255 : 0, fAvg, nodes); n.draw(hue); });
         
+        // Spectrum
         uictx.save();
         for (let i = 0; i < 20; i++) {
             const h = (dataArray[i] / 255) * 55; if (h <= 0) continue;
