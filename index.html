@@ -5,15 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Codequarium - Algorithmic Bio-Fluid Visualizer</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;700&family=JetBrains+Mono:wght@100;400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;700&family=JetBrains+Mono:wght@100;400&display=swap');
 
         :root {
             --bg: #000000;
             --accent: #3366ff;
             --text-main: #ffffff;
-            --text-dim: rgba(255, 255, 255, 0.5);
-            --card-bg: rgba(255, 255, 255, 0.02);
-            --frame-glow: rgba(51, 102, 255, 0);
+            --text-dim: rgba(255, 255, 255, 0.45);
+            --glass-bg: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --neon-glow: rgba(51, 102, 255, 0.15);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -22,34 +23,55 @@
             background-color: var(--bg);
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
-            line-height: 2.0;
+            line-height: 2.2;
             overflow-x: hidden;
             width: 100%;
             touch-action: manipulation;
             -webkit-text-size-adjust: 100%;
+            transition: background-color 1.5s ease;
         }
 
-        /* --- タイポグラフィ最適化 --- */
+        /* --- フィルムグレイン（質感の付与） --- */
+        body::after {
+            content: "";
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('data:image/svg+xml,<svg viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.05"/></svg>');
+            pointer-events: none; z-index: 100;
+        }
+
+        /* --- セクション表示アニメーション --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 1.8s cubic-bezier(0.16, 1, 0.3, 1), transform 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- タイポグラフィ --- */
         h1, h2, h3 { 
             text-wrap: balance;
             word-break: keep-all; 
-            letter-spacing: 0.4em;
+            letter-spacing: 0.6em;
             text-transform: uppercase;
             font-weight: 100;
         }
         p { 
             text-wrap: pretty;
-            max-width: 600px;
+            max-width: 640px;
             color: var(--text-dim);
-            font-weight: 300;
-            margin-bottom: 2rem;
+            font-weight: 200;
+            margin-bottom: 3rem;
+            letter-spacing: 0.08em;
         }
         .keep-together { display: inline-block; white-space: nowrap; }
 
-        /* --- エフェクトレイヤー --- */
+        /* --- 背景・ビネット --- */
         #vignette {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,1) 160%);
+            background: radial-gradient(circle at center, transparent 10%, rgba(0,0,0,1) 160%);
             z-index: 5; pointer-events: none;
         }
 
@@ -59,90 +81,89 @@
         }
 
         /* --- レイアウト構造 --- */
-        section { padding: 140px 10%; position: relative; z-index: 20; }
-        .container { max-width: 1100px; margin: 0 auto; }
+        section { padding: 220px 10%; position: relative; z-index: 20; }
+        .container { max-width: 1200px; margin: 0 auto; }
 
-        h1 { font-size: clamp(2.4rem, 8vw, 6rem); margin-bottom: 20px; line-height: 1.1; }
-        .hero-sub { font-size: 0.7rem; color: var(--accent); letter-spacing: 0.5em; margin-bottom: 40px; text-transform: uppercase; }
+        h1 { font-size: clamp(3rem, 12vw, 7.5rem); margin-bottom: 35px; line-height: 0.85; letter-spacing: 0.05em; }
+        .hero-sub { font-size: 0.8rem; color: var(--accent); letter-spacing: 0.8em; margin-bottom: 60px; opacity: 0.8; }
 
-        /* --- Hero --- */
+        /* --- Hero Visualizer --- */
         #hero {
-            min-height: 110vh;
+            min-height: 105vh;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            padding: 100px 0; overflow: hidden;
+            padding: 80px 0; overflow: hidden;
         }
 
         #visualizer-mount {
             position: relative;
             z-index: 10;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            background: rgba(1, 1, 4, 0.98);
-            border-radius: 8px;
-            box-shadow: 0 0 80px var(--frame-glow);
+            border: 1px solid var(--glass-border);
+            background: rgba(0, 0, 4, 0.97);
+            border-radius: 20px;
+            box-shadow: 0 0 150px rgba(51, 102, 255, 0.02);
             transform-style: preserve-3d;
-            transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1), height 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.1s ease-out;
+            transition: width 1s cubic-bezier(0.16, 1, 0.3, 1), height 1s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s ease-out;
             margin: 0 auto;
         }
 
-        #visualizer-mount.ratio-16-9 { width: 85vw; height: calc(85vw * 9 / 16); max-width: 1100px; max-height: 620px; }
-        #visualizer-mount.ratio-4-5 { width: 75vw; height: calc(75vw * 5 / 4); max-width: 550px; max-height: 700px; }
+        #visualizer-mount.ratio-16-9 { width: 88vw; height: calc(88vw * 9 / 16); max-width: 1150px; max-height: 646px; }
+        #visualizer-mount.ratio-4-5 { width: 75vw; height: calc(75vw * 5 / 4); max-width: 580px; max-height: 725px; }
 
         @media (max-width: 600px) {
-            #hero { padding: 60px 0; }
-            #visualizer-mount.ratio-16-9 { width: 92vw; height: calc(92vw * 10 / 16); }
-            #visualizer-mount.ratio-4-5 { width: 90vw; height: 125vw; } 
-            
-            section { padding: 100px 24px; }
-            .hero-controls { gap: 10px; margin-top: 40px; }
-            .btn-zen { padding: 12px 14px; font-size: 8px; letter-spacing: 0.1em; }
+            #visualizer-mount.ratio-16-9 { width: 94vw; height: calc(94vw * 10 / 16); }
+            #visualizer-mount.ratio-4-5 { width: 92vw; height: 135vw; } 
+            section { padding: 140px 24px; }
+            .btn-zen { padding: 15px 18px; font-size: 8px; }
+            h1 { line-height: 1.0; }
         }
 
         #fluid-engine {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            /* フィルター強度を再調整してエッジの鮮明度を維持 */
-            filter: blur(18px) contrast(115) brightness(1.2);
+            filter: blur(20px) contrast(150) brightness(1.1);
             pointer-events: none; z-index: 2;
         }
 
         canvas { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
         .hero-controls {
-            margin-top: 50px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; z-index: 30;
+            margin-top: 80px; display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; z-index: 30;
             max-width: 95vw;
         }
 
         /* --- UI Components --- */
-        .guide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 50px; margin-top: 80px; }
-        .guide-item { padding: 30px; border-left: 1px solid rgba(255,255,255,0.08); transition: 0.4s; }
-        .guide-item:hover { border-left-color: var(--accent); background: rgba(255,255,255,0.02); }
-        .guide-num { font-family: 'JetBrains+Mono', monospace; color: var(--accent); font-size: 0.8rem; margin-bottom: 20px; display: block; opacity: 0.8; }
-        .guide-item h3 { font-size: 0.8rem; margin-bottom: 15px; color: #fff; letter-spacing: 0.2em; line-height: 1.5; }
-        .guide-item p { font-size: 0.85rem; line-height: 1.8; margin-bottom: 0; }
+        .guide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 100px; margin-top: 140px; }
+        .guide-item { padding: 0 0 60px 0; border-bottom: 1px solid var(--glass-border); transition: 0.5s; }
+        .guide-num { font-family: 'JetBrains+Mono', monospace; color: var(--accent); font-size: 0.9rem; margin-bottom: 35px; display: block; opacity: 0.4; }
+        .guide-item h3 { font-size: 1.0rem; margin-bottom: 30px; color: #fff; letter-spacing: 0.4em; }
+        .guide-item p { font-size: 0.9rem; line-height: 2.4; margin-bottom: 0; }
 
         .btn-zen {
-            font-family: 'JetBrains+Mono', monospace; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
-            color: var(--text-dim); background: transparent; border: 1px solid rgba(255, 255, 255, 0.12);
-            padding: 14px 22px; cursor: pointer; transition: 0.3s;
+            font-family: 'JetBrains+Mono', monospace; font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
+            color: var(--text-dim); background: var(--glass-bg); border: 1px solid var(--glass-border);
+            padding: 20px 34px; cursor: pointer; transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
             outline: none; -webkit-tap-highlight-color: transparent;
-            border-radius: 2px;
+            backdrop-filter: blur(20px);
+            border-radius: 6px;
         }
-        .btn-zen:hover { color: #fff; border-color: var(--accent); background: rgba(51, 102, 255, 0.1); }
-        .btn-zen.active { border-color: var(--accent); color: #fff; background: rgba(51, 102, 255, 0.08); }
+        .btn-zen:hover { color: #fff; border-color: var(--accent); background: rgba(51, 102, 255, 0.25); transform: translateY(-5px); box-shadow: 0 10px 30px var(--neon-glow); }
+        .btn-zen.active { border-color: var(--accent); color: #fff; background: rgba(51, 102, 255, 0.2); }
+        .btn-sensor { border-color: rgba(255, 100, 100, 0.4); }
 
         .mystic-link {
-            display: inline-block; margin-top: 60px; padding: 22px 55px; background: #fff; color: #000;
-            text-decoration: none; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3em; font-size: 0.75rem;
-            transition: 0.4s; border-radius: 2px;
+            display: inline-block; margin-top: 100px; padding: 26px 85px; background: #fff; color: #000;
+            text-decoration: none; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6em; font-size: 0.85rem;
+            transition: 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 4px;
         }
-        .mystic-link:hover { background: var(--accent); color: white; transform: translateY(-5px); box-shadow: 0 10px 40px rgba(51, 102, 255, 0.3); }
+        .mystic-link:hover { background: var(--accent); color: white; transform: translateY(-15px); box-shadow: 0 40px 80px rgba(51, 102, 255, 0.5); }
 
         .mount-hud {
-            position: absolute; top: 18px; left: 24px; right: 24px;
+            position: absolute; top: 25px; left: 32px; right: 32px;
             display: flex; justify-content: space-between;
             z-index: 20; pointer-events: none;
-            font-family: 'JetBrains+Mono', monospace; font-size: 8px; opacity: 0.6;
-            letter-spacing: 0.2em;
+            font-family: 'JetBrains+Mono', monospace; font-size: 9px; opacity: 0.7;
+            letter-spacing: 0.5em;
         }
         
         #ui-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
@@ -153,17 +174,17 @@
 <div id="vignette"></div>
 <canvas id="background-layer"></canvas>
 
-<div id="hero">
-    <div class="container" style="text-align: center; margin-bottom: 20px;">
+<div id="hero" class="reveal">
+    <div class="container" style="text-align: center; margin-bottom: 30px;">
         <div class="hero-sub">The Coding Aquarium Project / <span class="keep-together">コードで描かれた水槽</span></div>
         <h1>Codequarium</h1>
-        <p style="margin: 0 auto 40px; max-width: 580px;">
+        <p style="margin: 0 auto 55px; max-width: 660px;">
             <span class="keep-together">計算が呼吸し、</span><span class="keep-together">旋律が鼓動へと変わる。</span><br>
             <span class="keep-together">コードで描かれた</span><span class="keep-together">深淵の生態系。</span>
         </p>
     </div>
 
-    <!-- メインマウント -->
+    <!-- Installation Frame -->
     <div id="visualizer-mount" class="ratio-16-9">
         <div class="mount-hud">
             <div id="display-title">Bio-Void Standby</div>
@@ -173,20 +194,21 @@
         <div id="fluid-engine"><canvas id="art-canvas"></canvas></div>
     </div>
 
-    <!-- コントロール -->
+    <!-- Universal Controls -->
     <div class="hero-controls">
         <button class="btn-zen active" id="play-pause-btn" onclick="togglePlayback()">Play</button>
         <button class="btn-zen" onclick="loadSample('track1.mp3', 'コーヒーの湯気')">Coffee Steam</button>
         <button class="btn-zen" onclick="loadSample('track2.mp3', '雨上がりブレンド')">After Rain</button>
         <button class="btn-zen" onclick="loadSample('track3.mp3', '午後のカップと君')">Afternoon Cup</button>
         <label class="btn-zen">Import MP3 <input type="file" id="file-input" accept=".mp3,audio/mpeg,audio/mp3,audio/*" style="display:none;"></label>
-        <button class="btn-zen" id="aspect-btn" style="border-color: rgba(100,150,255,0.4);">Change Layout</button>
+        <button class="btn-zen btn-sensor" id="sensor-btn" onclick="requestSensorAccess()">Enable Sensors</button>
+        <button class="btn-zen" id="aspect-btn" style="border-color: rgba(100,150,255,0.4);">Scale Frame</button>
     </div>
 </div>
 
-<section id="how-to">
+<section id="how-to" class="reveal">
     <div class="container">
-        <h2>How to Interact / <span class="keep-together">操作方法</span></h2>
+        <h2>System Interaction / <span class="keep-together">操作体系</span></h2>
         <div class="guide-grid">
             <div class="guide-item">
                 <span class="guide-num">01</span>
@@ -210,36 +232,36 @@
                 </p>
             </div>
             <div class="guide-item">
-                <span class="guide-num">04</span>
-                <h3>Feel the Recovery / <span class="keep-together">静寂への回帰</span></h3>
+                <span class="keep-together">04</span>
+                <h3>Sensor Fusion / <span class="keep-together">センサーによる干渉</span></h3>
                 <p>
-                    <span class="keep-together">マウスを離すと、</span><span class="keep-together">空間の傾きや粒子への干渉は</span><span class="keep-together">ゆっくりと収束し、世界は</span><span class="keep-together">元の穏やかな静止状態へと戻ります。</span>
+                    <span class="keep-together">PCではマウスの軌跡、</span><span class="keep-together">スマホではデバイスの傾き。</span><span class="keep-together">物理法則を歪ませる</span><span class="keep-together">感覚的な操作によって</span><span class="keep-together">生命たちは変容します。</span>
                 </p>
             </div>
         </div>
     </div>
 </section>
 
-<section id="footer-section" style="text-align: center; border-top: 1px solid rgba(255,255,255,0.05);">
+<section id="footer-section" class="reveal" style="text-align: center; border-top: 1px solid rgba(255,255,255,0.08);">
     <div class="container">
         <h2>Enter the Void / <span class="keep-together">深淵へ</span></h2>
-        <p style="margin: 0 auto 10px;">
+        <p style="margin: 0 auto 15px;">
             <span class="keep-together">Codequariumは、音楽と計算が</span><span class="keep-together">融合する実験的なデジタル水槽です。</span>
         </p>
-        <p id="error-notice" style="font-size: 11px; opacity: 0.5; margin-bottom: 50px;">
+        <p id="error-notice" style="font-size: 11px; opacity: 0.4; margin-bottom: 80px;">
             <span class="keep-together">※スマホでの再生は、画面を</span><span class="keep-together">一度タップした後に可能になります。</span>
         </p>
         <a href="https://www.threads.net/@hogushiya_kida?xmt=AQF0jg1JRo6B5FOakS_Gv36JaTHkwzBeYu6f729XkxglZCo" class="mystic-link" target="_blank">Connect on Threads / <span class="keep-together">Threadsで繋がる</span></a>
     </div>
 </section>
 
-<footer style="padding: 100px 60px; text-align: center; font-size: 9px; opacity: 0.3; letter-spacing: 0.6em;">
+<footer style="padding: 160px 60px; text-align: center; font-size: 10px; opacity: 0.15; letter-spacing: 1.0em;">
     &copy; 2025 CODEQUARIUM PROJECT. CRAFTED BY CODE.
 </footer>
 
 <script>
     /**
-     * CODEQUARIUM CORE ENGINE - Refined Node Scale Edition
+     * CODEQUARIUM CORE ENGINE - Ultimate PC/Mobile Hybrid Version
      */
     const bgCanvas = document.getElementById('background-layer');
     const canvas = document.getElementById('art-canvas');
@@ -254,6 +276,7 @@
     const fileInput = document.getElementById('file-input');
     const aspectBtn = document.getElementById('aspect-btn');
     const playPauseBtn = document.getElementById('play-pause-btn');
+    const sensorBtn = document.getElementById('sensor-btn');
 
     let audioCtx, analyser, dataArray, prevDataArray, source, audioBuffer;
     let isInitialized = false, isPlaying = false;
@@ -261,12 +284,13 @@
     let currentMode = 'FLOW', globalVol = 0;
     
     let mouse = { x: 0, y: 0, globalX: 0, globalY: 0, active: false, down: false, influence: 0 };
+    let tilt = { x: 0, y: 0, active: false };
     let dragNode = null; 
     let rotateX = 0, rotateY = 0;
     let dpr = window.devicePixelRatio || 1;
 
     const MAX_NODES = 16; 
-    const PARTICLE_COUNT = 150; 
+    const PARTICLE_COUNT = 180; 
     let lastEvolutionTime = 0;
     const EVOLUTION_INTERVAL = 12;
 
@@ -274,9 +298,16 @@
     const VISCOSITY = 0.012; 
     const BASE_SPEED_LIMIT = 0.45;
 
-    // --- デバイスに応じたスケーリング係数 ---
+    // Reveal Logic
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
+    }, { threshold: 0.05 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // --- Dynamic Scaling Helper (PC vs Mobile) ---
     function getDeviceScale() {
-        return window.innerWidth < 600 ? 0.7 : 1.0;
+        const isMobile = window.innerWidth < 600;
+        return isMobile ? 0.72 : 1.15; // PC版ではさらに迫力を出すために 1.15倍へ
     }
 
     function wakeAudio() {
@@ -284,11 +315,28 @@
         if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
+    async function requestSensorAccess() {
+        wakeAudio();
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+            try {
+                const permission = await DeviceOrientationEvent.requestPermission();
+                if (permission === 'granted') { startTiltListening(); }
+            } catch (e) { console.error(e); }
+        } else { startTiltListening(); }
+    }
+
+    function startTiltListening() {
+        tilt.active = true;
+        sensorBtn.innerText = "Tilt Active"; sensorBtn.classList.add('active');
+        window.addEventListener('deviceorientation', (e) => {
+            tilt.x = e.gamma * 0.22; tilt.y = (e.beta - 45) * 0.22; // 45度持ちを基準
+        });
+    }
+
     class SwarmNode {
         constructor(id, x, y) {
             this.id = id; this.x = x; this.y = y; this.vx = 0; this.vy = 0;
-            this.targetX = x; this.targetY = y; this.radius = 10;
-            this.noiseSeedX = Math.random() * 2000; this.noiseSeedY = Math.random() * 2000;
+            this.radius = 12; this.noiseSeedX = Math.random() * 5000; this.noiseSeedY = Math.random() * 5000;
             this.isDragging = false;
         }
         update(nodeVol, flux, nodes) {
@@ -298,56 +346,59 @@
 
             if (this.isDragging) {
                 this.x = mouse.x; this.y = mouse.y;
-                this.targetX = mouse.x; this.targetY = mouse.y;
             } else {
-                const t = Date.now() * 0.00005;
-                let tx = (logicalW/2) + Math.sin(t * (0.6 + this.id * 0.08) + this.noiseSeedX) * (logicalW * 0.35);
-                let ty = (logicalH/2) + Math.cos(t * (0.5 + this.id * 0.12) + this.noiseSeedY) * (logicalH * 0.35);
+                const t = Date.now() * 0.00004;
+                let tx = (logicalW/2) + Math.sin(t * (0.5 + this.id * 0.08) + this.noiseSeedX) * (logicalW * 0.4);
+                let ty = (logicalH/2) + Math.cos(t * (0.4 + this.id * 0.1) + this.noiseSeedY) * (logicalH * 0.4);
                 
                 if (mouse.influence > 0.01) {
                     const dx = mouse.x - this.x, dy = mouse.y - this.y;
                     const d = Math.sqrt(dx * dx + dy * dy) || 1;
-                    if (d < 300) { tx += (dx / d) * (55 * mouse.influence); ty += (dy / d) * (55 * mouse.influence); }
+                    if (d < 350) { tx += (dx / d) * (65 * mouse.influence); ty += (dy / d) * (65 * mouse.influence); }
                 }
+                if (tilt.active) { this.vx += tilt.x * 0.06; this.vy += tilt.y * 0.06; }
 
                 nodes.forEach(other => {
                     if (other === this) return;
                     const dx = other.x - this.x, dy = other.y - this.y;
                     const dist = Math.sqrt(dx*dx + dy*dy) || 5;
-                    const minDist = (this.radius + other.radius) * 1.5;
-                    if (dist < minDist) { this.vx -= (dx / dist) * 0.025; this.vy -= (dy / dist) * 0.025; }
+                    const minDist = (this.radius + other.radius) * 1.65;
+                    if (dist < minDist) { this.vx -= (dx / dist) * 0.035; this.vy -= (dy / dist) * 0.035; }
                 });
 
                 this.vx += (tx - this.x) * VISCOSITY; this.vy += (ty - this.y) * VISCOSITY;
-                const limit = (BASE_SPEED_LIMIT + flux * 0.6) * mScale;
+                const limit = (BASE_SPEED_LIMIT + flux * 0.7) * mScale;
                 const speed = Math.sqrt(this.vx*this.vx + this.vy*this.vy) || 0.01;
                 if (speed > limit) { this.vx = (this.vx/speed)*limit; this.vy = (this.vy/speed)*limit; }
                 this.x += this.vx; this.y += this.vy;
                 this.vx *= FRICTION; this.vy *= FRICTION;
             }
 
-            const pad = this.radius + 10;
+            const pad = this.radius + 5;
             if (this.x < pad) { this.vx = Math.abs(this.vx) * 0.6; this.x = pad; }
             if (this.x > logicalW - pad) { this.vx = -Math.abs(this.vx) * 0.6; this.x = logicalW - pad; }
             if (this.y < pad) { this.vy = Math.abs(this.vy) * 0.6; this.y = pad; }
             if (this.y > logicalH - pad) { this.vy = -Math.abs(this.vy) * 0.6; this.y = logicalH - pad; }
             
-            // --- 【修正】静止サイズを小さく、膨張率も控えめに ---
-            const baseR = 15; // 静止時の基本半径
-            const growthFactor = 22; // 音楽による最大膨張幅
-            const fluxFactor = 28; // スペクトル変化による最大膨張幅
-            const targetR = (baseR + nodeVol * growthFactor + flux * fluxFactor) * mScale;
-            this.radius += (targetR - this.radius) * (targetR > this.radius ? 0.25 : 0.08);
+            const baseR = 15; 
+            const pulse = Math.sin(Date.now() * 0.0025 + this.id) * 1.8;
+            const targetR = (baseR + nodeVol * 30 + flux * 35 + pulse) * mScale;
+            this.radius += (targetR - this.radius) * (targetR > this.radius ? 0.22 : 0.07);
         }
         draw(hue) {
-            if (!isFinite(this.x) || !isFinite(this.y)) return;
+            if (!isFinite(this.x)) return;
             const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
-            const intensity = (this.isDragging || currentMode === 'BANG') ? 1.0 : 0.72;
-            g.addColorStop(0, `hsla(${hue}, 80%, 96%, ${intensity})`); 
-            g.addColorStop(0.25, `hsla(${hue}, 70%, 55%, 0.65)`);
-            g.addColorStop(0.75, `hsla(${hue}, 90%, 12%, 0.18)`);
+            const intensity = (this.isDragging || currentMode === 'BANG') ? 1.0 : 0.82;
+            g.addColorStop(0, `hsla(${hue}, 80%, 98%, ${intensity})`); 
+            g.addColorStop(0.2, `hsla(${hue}, 75%, 60%, 0.65)`);
+            g.addColorStop(0.85, `hsla(${hue}, 90%, 15%, 0.2)`);
             g.addColorStop(1, 'transparent');
             ctx.fillStyle = g; ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fill();
+
+            const innerG = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius * 0.4);
+            innerG.addColorStop(0, `hsla(${hue}, 100%, 100%, 0.9)`);
+            innerG.addColorStop(1, 'transparent');
+            ctx.fillStyle = innerG; ctx.beginPath(); ctx.arc(this.x, this.y, this.radius * 0.4, 0, Math.PI * 2); ctx.fill();
         }
     }
 
@@ -356,29 +407,32 @@
         init(randomPos = false) {
             const w = bgCanvas.width/dpr, h = bgCanvas.height/dpr;
             if (randomPos) { this.x = Math.random() * w; this.y = Math.random() * h; } 
-            else { const a = Math.random()*Math.PI*2, d = Math.random()*150; this.x = (w/2) + Math.cos(a)*d; this.y = (h/2) + Math.sin(a)*d; }
-            this.z = Math.random() * 2 + 0.5; this.baseAngle = Math.random() * Math.PI * 2;
-            this.speed = (Math.random() * 0.14 + 0.06) / this.z; this.size = Math.random() * 1.6 + 0.6;
-            this.alpha = Math.random() * 0.25 + 0.12; this.flickerS = Math.random() * 0.03 + 0.01; this.vx = 0; this.vy = 0;
+            else { const a = Math.random()*Math.PI*2, d = Math.random()*180; this.x = (w/2) + Math.cos(a)*d; this.y = (h/2) + Math.sin(a)*d; }
+            this.z = Math.random() * 2.5 + 0.5; this.baseAngle = Math.random() * Math.PI * 2;
+            this.speed = (Math.random() * 0.16 + 0.08) / this.z; this.size = Math.random() * 2.0 + 0.6;
+            this.alpha = Math.random() * 0.3 + 0.15; this.flickerS = Math.random() * 0.05 + 0.01; this.vx = 0; this.vy = 0;
         }
         update(bass) {
-            const cx = bgCanvas.width/(2*dpr), cy = bgCanvas.height/(2*dpr), t = Date.now() * 0.001;
-            const flowA = t * (0.045 / this.z) + this.baseAngle;
-            this.x += Math.cos(flowA) * this.speed + this.vx; this.y += Math.sin(flowA) * this.speed + this.vy;
+            const w = bgCanvas.width/dpr, h = bgCanvas.height/dpr;
+            const cx = w/2, cy = h/2, t = Date.now() * 0.0015;
+            if (tilt.active) { this.vx += tilt.x * 0.02; this.vy += tilt.y * 0.02; }
+            this.x += Math.cos(t * (0.05 / this.z) + this.baseAngle) * this.speed + this.vx; 
+            this.y += Math.sin(t * (0.05 / this.z) + this.baseAngle) * this.speed + this.vy;
             const dx = this.x - cx, dy = this.y - cy, dist = Math.sqrt(dx*dx + dy*dy) || 1;
-            this.vx += (dx / dist) * bass * 0.45; if (currentMode === 'BANG') { this.vx += (dx/dist)*2.5; }
+            this.vx += (dx / dist) * bass * 0.55; if (currentMode === 'BANG') { this.vx += (dx/dist)*3.5; }
             if (mouse.influence > 0.01) {
                 const mdx = this.x - mouse.globalX, mdy = this.y - mouse.globalY;
                 const mdist = Math.sqrt(mdx*mdx + mdy*mdy) || 1;
-                if (mdist < 260) { const f = (1 - mdist/260) * 3.5 * mouse.influence; this.vx += (mdx/mdist)*f; this.vy += (mdy/mdist)*f; }
+                if (mdist < 300) { const f = (1 - mdist/300) * 4.5 * mouse.influence; this.vx += (mdx/mdist)*f; this.vy += (mdy/mdist)*f; }
             }
-            this.vx *= 0.92; this.vy *= 0.92;
-            if (this.x < -150 || this.x > bgCanvas.width/dpr + 150 || this.y < -150 || this.y > bgCanvas.height/dpr + 150) this.init(false);
+            this.vx *= 0.90; this.vy *= 0.90;
+            if (this.x < -200 || this.x > w + 200 || this.y < -200 || this.y > h + 200) this.init(false);
         }
         draw(hue, bass) {
-            const a = this.alpha + globalVol * 0.25 + bass * 0.45 + Math.sin(Date.now() * this.flickerS) * 0.1;
-            bgCtx.fillStyle = `hsla(${hue}, 75%, 90%, ${Math.min(1, a)})`;
-            bgCtx.beginPath(); bgCtx.arc(this.x, this.y, this.size * (1 + bass * 1.8), 0, Math.PI * 2); bgCtx.fill();
+            const pulse = bass * 1.5;
+            const a = this.alpha + globalVol * 0.35 + pulse * 0.6 + Math.sin(Date.now() * this.flickerS) * 0.2;
+            bgCtx.fillStyle = `hsla(${hue}, 80%, 94%, ${Math.min(1, a)})`;
+            bgCtx.beginPath(); bgCtx.arc(this.x, this.y, (this.size + pulse) * (1 + bass * 2), 0, Math.PI * 2); bgCtx.fill();
         }
     }
 
@@ -403,8 +457,7 @@
             c.width = rect.width * dpr; c.height = rect.height * dpr;
             c.style.width = rect.width + 'px'; c.style.height = rect.height + 'px';
         });
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        uictx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0); uictx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
     function updateMousePos(e) {
@@ -413,14 +466,15 @@
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         mouse.x = clientX - rect.left; mouse.y = clientY - rect.top;
         mouse.globalX = clientX; mouse.globalY = clientY;
-        rotateY = ((clientX / window.innerWidth) - 0.5) * 8; rotateX = ((clientY / window.innerHeight) - 0.5) * -8;
+        rotateY = ((clientX / window.innerWidth) - 0.5) * 12; // PCでは傾きを強く
+        rotateX = ((clientY / window.innerHeight) - 0.5) * -12;
     }
 
-    mount.addEventListener('mousedown', (e) => { wakeAudio(); mouse.down = true; updateMousePos(e); let target = null; nodes.forEach(n => { if (Math.hypot(n.x - mouse.x, n.y - mouse.y) < 120) target = n; }); if (target) { dragNode = target; dragNode.isDragging = true; } });
+    mount.addEventListener('mousedown', (e) => { wakeAudio(); mouse.down = true; updateMousePos(e); let target = null; nodes.forEach(n => { if (Math.hypot(n.x - mouse.x, n.y - mouse.y) < 130) target = n; }); if (target) { dragNode = target; dragNode.isDragging = true; } });
     window.addEventListener('mousemove', (e) => { updateMousePos(e); mouse.active = true; });
     window.addEventListener('mouseup', () => { mouse.down = false; if (dragNode) { dragNode.isDragging = false; dragNode = null; } });
     mount.addEventListener('mouseleave', () => { mouse.active = false; });
-    mount.addEventListener('touchstart', (e) => { wakeAudio(); if (e.target.tagName !== 'BUTTON') e.preventDefault(); mouse.down = true; mouse.active = true; updateMousePos(e); let target = null; nodes.forEach(n => { if (Math.hypot(n.x - mouse.x, n.y - mouse.y) < 100) target = n; }); if (target) { dragNode = target; dragNode.isDragging = true; } }, {passive: false});
+    mount.addEventListener('touchstart', (e) => { wakeAudio(); if (e.target.tagName !== 'BUTTON') e.preventDefault(); mouse.down = true; mouse.active = true; updateMousePos(e); let target = null; nodes.forEach(n => { if (Math.hypot(n.x - mouse.x, n.y - mouse.y) < 110) target = n; }); if (target) { dragNode = target; dragNode.isDragging = true; } }, {passive: false});
     window.addEventListener('touchmove', (e) => { if(mouse.down) e.preventDefault(); updateMousePos(e); }, {passive: false});
     window.addEventListener('touchend', () => { mouse.down = false; mouse.active = false; if (dragNode) { dragNode.isDragging = false; dragNode = null; } });
 
@@ -444,9 +498,9 @@
                 pauseOffset = 0; startPlayback(0); isInitialized = true;
                 const rect = mount.getBoundingClientRect(); nodes = [new SwarmNode(0, rect.width/2, rect.height/2)]; lastEvolutionTime = 0;
             });
-        }).catch(err => { if (displayTitle) displayTitle.innerText = "Load Error"; });
+        }).catch(err => { if (displayTitle) displayTitle.innerText = "Error"; });
     }
-    window.loadSample = loadSample; window.togglePlayback = togglePlayback;
+    window.loadSample = loadSample; window.togglePlayback = togglePlayback; window.requestSensorAccess = requestSensorAccess;
 
     fileInput.onchange = (e) => {
         if (!e.target.files[0]) return;
@@ -466,14 +520,14 @@
         const is169 = mount.classList.contains('ratio-16-9');
         mount.classList.remove('ratio-16-9', 'ratio-4-5'); mount.classList.add(is169 ? 'ratio-4-5' : 'ratio-16-9');
         let animStart = null;
-        function step(ts) { if(!animStart) animStart = ts; syncSizes(); if (ts - animStart < 900) requestAnimationFrame(step); }
+        function step(ts) { if(!animStart) animStart = ts; syncSizes(); if (ts - animStart < 1000) requestAnimationFrame(step); }
         requestAnimationFrame(step);
     };
 
     function animate() {
         requestAnimationFrame(animate);
-        if (mouse.active) { mouse.influence += (1 - mouse.influence) * 0.12; } 
-        else { mouse.influence += (0 - mouse.influence) * 0.06; rotateX *= 0.94; rotateY *= 0.94; }
+        if (mouse.active) { mouse.influence += (1 - mouse.influence) * 0.15; } 
+        else { mouse.influence += (0 - mouse.influence) * 0.05; rotateX *= 0.92; rotateY *= 0.92; }
         if (isInitialized && isPlaying && analyser) { 
             analyser.getByteFrequencyData(dataArray); 
             const current = audioCtx.currentTime - startTime;
@@ -492,11 +546,13 @@
             globalVol = avg; if (!prevDataArray) prevDataArray = new Uint8Array(256); prevDataArray.set(dataArray);
             const hue = (pIndex / 128) * 360 + (Date.now() * 0.003 % 360);
             if (isInitialized) {
-                mount.style.setProperty('--frame-glow', `hsla(${hue}, 70%, 70%, ${avg * 0.9})`);
-                mount.style.borderColor = `hsla(${hue}, 60%, 80%, ${0.2 + avg * 0.5})`;
-                vignette.style.opacity = 0.4 + avg * 0.6;
+                mount.style.setProperty('--frame-glow', `hsla(${hue}, 70%, 70%, ${avg * 1.2})`);
+                mount.style.borderColor = `hsla(${hue}, 60%, 80%, ${0.25 + avg * 0.6})`;
+                vignette.style.opacity = 0.5 + avg * 0.4;
+                // 環境光エフェクト（PCでの没入感を強化）
+                document.body.style.backgroundColor = `hsla(${hue}, 100%, 3%, 1)`;
             }
-            if (currentMode !== 'BANG' && isInitialized && isPlaying && fAvg > 0.22) { currentMode = 'BANG'; setTimeout(() => currentMode = 'FLOW', 8000); }
+            if (currentMode !== 'BANG' && isInitialized && isPlaying && fAvg > 0.23) { currentMode = 'BANG'; setTimeout(() => currentMode = 'FLOW', 8000); }
             
             const rect = mount.getBoundingClientRect();
             ctx.clearRect(0,0,rect.width, rect.height);
@@ -508,14 +564,14 @@
             nodeDisplay.innerText = `NODES: ${nodes.length}`;
             nodes.forEach((n, i) => { n.update(isInitialized ? dataArray[i%32]/255 : 0, fAvg, nodes); n.draw(hue); });
             
-            // --- イコライザー修正：HUDの横で上品なバランスに ---
+            // イコライザー：PCではドットを少し大きく
             uictx.save();
-            const barCount = 18, barGap = 10, barW = 1.0;
+            const barCount = 28, barGap = 9, barW = 1.2;
             const startX = (rect.width / 2) - (barCount * barGap / 2);
-            const baselineY = 48; 
+            const baselineY = 56; 
             for (let i = 0; i < barCount; i++) {
-                const h = (dataArray[i] / 255) * 35; if (h <= 0) continue;
-                uictx.fillStyle = `hsla(${hue}, 80%, 90%, 0.45)`;
+                const h = (dataArray[i] / 255) * 38; if (h <= 0) continue;
+                uictx.fillStyle = `hsla(${hue}, 80%, 98%, 0.6)`;
                 uictx.fillRect(startX + i * barGap, baselineY, barW, h);
             }
             uictx.restore();
