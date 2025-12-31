@@ -25,9 +25,10 @@
             line-height: 1.8;
             overflow-x: hidden;
             width: 100%;
+            touch-action: manipulation;
         }
 
-        /* --- タイポグラフィ最適化 --- */
+        /* --- タイポグラフィ最適化（孤立行防止） --- */
         h1, h2, h3 { 
             text-wrap: balance;
             word-break: keep-all; 
@@ -38,13 +39,13 @@
         }
         p { 
             text-wrap: pretty;
-            max-width: 700px;
+            max-width: 600px;
             color: var(--text-dim);
             font-weight: 300;
         }
-        .keep-together { display: inline-block; }
+        .keep-together { display: inline-block; white-space: nowrap; }
 
-        /* --- エフェクト --- */
+        /* --- 背景・ビネット --- */
         #vignette {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.95) 150%);
@@ -219,7 +220,7 @@
             <span class="keep-together">Codequariumは、</span><span class="keep-together">音楽と計算が</span><span class="keep-together">融合する</span><span class="keep-together">実験的な</span><span class="keep-together">デジタル水槽です。</span>
         </p>
         <p id="error-notice" style="font-size: 11px; opacity: 0.5; margin-bottom: 30px;">
-            <span class="keep-together">※サンプル再生には</span><span class="keep-together">ローカルサーバー（Live Server等）が</span><span class="keep-together">必要です。</span>
+            <span class="keep-together">※サンプル再生には</span><span class="keep-together">公開サーバー（GitHub Pages等）が</span><span class="keep-together">必要です。</span>
         </p>
         <a href="https://www.threads.net/@hogushiya_kida?xmt=AQF0jg1JRo6B5FOakS_Gv36JaTHkwzBeYu6f729XkxglZCo" class="mystic-link" target="_blank">Connect on Threads / <span class="keep-together">Threadsで繋がる</span></a>
     </div>
@@ -231,7 +232,7 @@
 
 <script>
     /**
-     * CODEQUARIUM CORE ENGINE - Fixed Stability & Robust Interaction
+     * CODEQUARIUM CORE ENGINE - Fixed Equalizer (DPR Correction)
      */
     const bgCanvas = document.getElementById('background-layer');
     const canvas = document.getElementById('art-canvas');
@@ -255,6 +256,7 @@
     let mouse = { x: 0, y: 0, globalX: 0, globalY: 0, active: false, down: false, influence: 0 };
     let dragNode = null; 
     let rotateX = 0, rotateY = 0;
+    let dpr = window.devicePixelRatio || 1;
 
     const MAX_NODES = 16; 
     const PARTICLE_COUNT = 150; 
@@ -271,7 +273,12 @@
             this.targetX = x; this.targetY = y;
         }
         solve(dynamicBoost = 0) {
-            if (!isFinite(this.x) || !isFinite(this.y)) { this.x = canvas.width/2; this.y = canvas.height/2; this.vx=0; this.vy=0; }
+            // 安全装置：数値がNaNまたは無限になった場合に強制復帰
+            if (!isFinite(this.x) || !isFinite(this.y)) { 
+                this.x = (canvas.width / dpr) / 2; 
+                this.y = (canvas.height / dpr) / 2; 
+                this.vx = 0; this.vy = 0; 
+            }
             const dx = this.targetX - this.x;
             const dy = this.targetY - this.y;
             this.vx += dx * VISCOSITY; this.vy += dy * VISCOSITY;
@@ -290,16 +297,17 @@
             this.isDragging = false;
         }
         update(nodeVol, flux, nodes) {
+            const logicalW = canvas.width / dpr;
+            const logicalH = canvas.height / dpr;
+
             if (this.isDragging) {
-                const ox = this.p.x, oy = this.p.y;
                 this.p.x = mouse.x; this.p.y = mouse.y;
-                this.p.vx = (this.p.x - ox) * 0.4; this.p.vy = (this.p.y - oy) * 0.4;
-                this.p.targetX = this.p.x; this.p.targetY = this.p.y;
+                this.p.targetX = mouse.x; this.p.targetY = mouse.y;
             } else {
                 const t = Date.now() * 0.00005;
-                const cx = canvas.width / 2; const cy = canvas.height / 2;
-                let tx = cx + Math.sin(t * (0.6 + this.id * 0.08) + this.noiseSeedX) * (canvas.width * 0.32);
-                let ty = cy + Math.cos(t * (0.5 + this.id * 0.12) + this.noiseSeedY) * (canvas.height * 0.32);
+                const cx = logicalW / 2; const cy = logicalH / 2;
+                let tx = cx + Math.sin(t * (0.6 + this.id * 0.08) + this.noiseSeedX) * (logicalW * 0.32);
+                let ty = cy + Math.cos(t * (0.5 + this.id * 0.12) + this.noiseSeedY) * (logicalH * 0.32);
                 
                 if (mouse.influence > 0.01) {
                     const dx = mouse.x - this.p.x, dy = mouse.y - this.p.y;
@@ -324,22 +332,23 @@
             }
             const pad = this.radius + 35;
             if (this.p.x < pad) { this.p.vx = Math.abs(this.p.vx) * 0.6; this.p.x = pad; }
-            if (this.p.x > canvas.width - pad) { this.p.vx = -Math.abs(this.p.vx) * 0.6; this.p.x = canvas.width - pad; }
+            if (this.p.x > logicalW - pad) { this.p.vx = -Math.abs(this.p.vx) * 0.6; this.p.x = logicalW - pad; }
             if (this.p.y < pad) { this.p.vy = Math.abs(this.p.vy) * 0.6; this.p.y = pad; }
-            if (this.p.y > canvas.height - pad) { this.p.vy = -Math.abs(this.p.vy) * 0.6; this.p.y = canvas.height - pad; }
+            if (this.p.y > logicalH - pad) { this.p.vy = -Math.abs(this.p.vy) * 0.6; this.p.y = logicalH - pad; }
             
             const targetR = 26 + nodeVol * 80 + flux * 135;
             this.radius += (targetR - this.radius) * (targetR > this.radius ? 0.3 : 0.08);
         }
         draw(hue) {
             if (!isFinite(this.p.x) || !isFinite(this.p.y) || this.radius <= 1) return;
-            const g = ctx.createRadialGradient(this.p.x, this.p.y, 0, this.p.x, this.p.y, this.radius);
+            const px = this.p.x * dpr, py = this.p.y * dpr, pr = this.radius * dpr;
+            const g = ctx.createRadialGradient(px, py, 0, px, py, pr);
             const intensity = (this.isDragging || currentMode === 'BANG') ? 1.0 : 0.68;
             g.addColorStop(0, `hsla(${hue}, 80%, 92%, ${intensity})`); 
             g.addColorStop(0.2, `hsla(${hue}, 70%, 50%, 0.65)`);
             g.addColorStop(0.75, `hsla(${hue}, 90%, 5%, 0.18)`);
             g.addColorStop(1, 'transparent');
-            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(this.p.x, this.p.y, this.radius, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2); ctx.fill();
         }
     }
 
@@ -347,9 +356,9 @@
         constructor() { this.init(true); }
         init(randomPos = false) {
             if (randomPos) { this.x = Math.random() * bgCanvas.width; this.y = Math.random() * bgCanvas.height; } 
-            else { const a = Math.random()*Math.PI*2, d = Math.random()*150; this.x = (bgCanvas.width/2) + Math.cos(a)*d; this.y = (bgCanvas.height/2) + Math.sin(a)*d; }
+            else { const a = Math.random()*Math.PI*2, d = Math.random()*150*dpr; this.x = (bgCanvas.width/2) + Math.cos(a)*d; this.y = (bgCanvas.height/2) + Math.sin(a)*d; }
             this.z = Math.random() * 2 + 0.5; this.baseAngle = Math.random() * Math.PI * 2;
-            this.speed = (Math.random() * 0.12 + 0.05) / this.z; this.size = Math.random() * 1.5 + 0.4;
+            this.speed = (Math.random() * 0.12 + 0.05) / this.z * dpr; this.size = (Math.random() * 1.5 + 0.4) * dpr;
             this.alpha = Math.random() * 0.2 + 0.1; this.flickerS = Math.random() * 0.03 + 0.01; this.vx = 0; this.vy = 0;
         }
         update(bass) {
@@ -357,12 +366,15 @@
             const flowA = t * (0.04 / this.z) + this.baseAngle;
             const flowX = Math.cos(flowA) * this.speed, flowY = Math.sin(flowA) * this.speed;
             const dx = this.x - cx, dy = this.y - cy, dist = Math.sqrt(dx*dx + dy*dy) || 1;
-            this.vx += (dx / dist) * bass * 0.38;
-            if (currentMode === 'BANG') { this.vx += (dx / dist) * 1.8; this.vy += (dy / dist) * 1.8; }
+            this.vx += (dx / dist) * bass * 0.38 * dpr;
+            if (currentMode === 'BANG') { this.vx += (dx / dist) * 1.8 * dpr; this.vy += (dy / dist) * 1.8 * dpr; }
             if (mouse.influence > 0.01) {
-                const mdx = this.x - mouse.globalX, mdy = this.y - mouse.globalY;
+                const mdx = this.x - mouse.globalX * dpr, mdy = this.y - mouse.globalY * dpr;
                 const mdist = Math.sqrt(mdx*mdx + mdy*mdy) || 1;
-                if (mdist < 300) { const f = (1 - mdist/300) * 2.8 * mouse.influence; this.vx += (mdx/mdist)*f; this.vy += (mdy/mdist)*f; }
+                if (mdist < 300 * dpr) { 
+                    const f = (1 - mdist / (300 * dpr)) * 2.8 * mouse.influence * dpr; 
+                    this.vx += (mdx/mdist)*f; this.vy += (mdy/mdist)*f; 
+                }
             }
             this.x += flowX + this.vx; this.y += flowY + this.vy; this.vx *= 0.93; this.vy *= 0.93;
             if (this.x < -200 || this.x > bgCanvas.width + 200 || this.y < -200 || this.y > bgCanvas.height + 200) this.init(false);
@@ -380,7 +392,7 @@
     function setup() {
         syncSizes();
         dataArray = new Uint8Array(256); prevDataArray = new Uint8Array(256);
-        nodes = [new SwarmNode(0, canvas.width / 2, canvas.height / 2)];
+        nodes = [new SwarmNode(0, (canvas.width/dpr) / 2, (canvas.height/dpr) / 2)];
         particles = Array.from({ length: PARTICLE_COUNT }, () => new BioParticle());
         animate();
     }
@@ -394,19 +406,20 @@
     }
 
     function syncSizes() {
-        const oldW = canvas.width, oldH = canvas.height;
-        bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight;
+        dpr = window.devicePixelRatio || 1;
+        const oldW = canvas.width / dpr, oldH = canvas.height / dpr;
+        bgCanvas.width = window.innerWidth * dpr; bgCanvas.height = window.innerHeight * dpr;
         const rect = mount.getBoundingClientRect();
         if (rect && rect.width > 0) {
-            canvas.width = uiCanvas.width = rect.width; canvas.height = uiCanvas.height = rect.height;
+            canvas.width = uiCanvas.width = rect.width * dpr;
+            canvas.height = uiCanvas.height = rect.height * dpr;
             if (oldW > 0) {
-                const cx = canvas.width / 2, cy = canvas.height / 2;
-                const oldCX = oldW / 2, oldCY = oldH / 2;
+                const cx = (canvas.width/dpr)/2, cy = (canvas.height/dpr)/2;
                 nodes.forEach(n => {
-                    const offX = n.p.x - oldCX, offY = n.p.y - oldCY;
-                    n.p.x = cx + offX * (canvas.width / oldW); n.p.y = cy + offY * (canvas.height / oldH);
-                    const toffX = n.p.targetX - oldCX, toffY = n.p.targetY - oldCY;
-                    n.p.targetX = cx + toffX * (canvas.width / oldW); n.p.targetY = cy + toffY * (canvas.height / oldH);
+                    n.p.x = cx + (n.p.x - oldW/2) * ((canvas.width/dpr) / oldW);
+                    n.p.y = cy + (n.p.y - oldH/2) * ((canvas.height/dpr) / oldH);
+                    n.p.targetX = cx + (n.p.targetX - oldW/2) * ((canvas.width/dpr) / oldW);
+                    n.p.targetY = cy + (n.p.targetY - oldH/2) * ((canvas.height/dpr) / oldH);
                 });
             }
         }
@@ -430,23 +443,31 @@
     window.addEventListener('mousemove', (e) => { updateMousePos(e); mouse.active = true; });
     window.addEventListener('mouseup', () => { mouse.down = false; if (dragNode) { dragNode.isDragging = false; dragNode = null; } });
     mount.addEventListener('mouseleave', () => { mouse.active = false; });
+    
+    mount.addEventListener('touchstart', (e) => {
+        if (e.target.tagName !== 'BUTTON') e.preventDefault();
+        mouse.down = true; mouse.active = true; updateMousePos(e);
+        let target = null;
+        nodes.forEach(n => { if (Math.hypot(n.p.x - mouse.x, n.p.y - mouse.y) < 100) target = n; });
+        if (target) { dragNode = target; dragNode.isDragging = true; }
+    }, {passive: false});
+    window.addEventListener('touchmove', (e) => { if(mouse.down) e.preventDefault(); updateMousePos(e); }, {passive: false});
+    window.addEventListener('touchend', () => { mouse.down = false; mouse.active = false; if (dragNode) { dragNode.isDragging = false; dragNode = null; } });
 
     // --- 音響コントロール ---
     function startPlayback(offset) {
         if (!audioBuffer) return;
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        if (!analyser) { analyser = audioCtx.createAnalyser(); analyser.fftSize = 512; }
-        
+        if (!analyser) { analyser = audioCtx.createAnalyser(); analyser.fftSize = 512; analyser.connect(audioCtx.destination); }
         if (source) { try { source.stop(); } catch(e) {} source.disconnect(); }
         source = audioCtx.createBufferSource();
         source.buffer = audioBuffer;
         source.connect(analyser);
-        analyser.connect(audioCtx.destination);
         source.start(0, offset);
         startTime = audioCtx.currentTime - offset;
         isPlaying = true;
-        if (playPauseBtn) { playPauseBtn.innerText = "Pause"; playPauseBtn.classList.add('active'); }
+        playPauseBtn.innerText = "Pause"; playPauseBtn.classList.add('active');
     }
 
     function togglePlayback() {
@@ -454,30 +475,23 @@
         if (isPlaying) {
             pauseOffset = audioCtx.currentTime - startTime;
             if (source) source.stop(); isPlaying = false;
-            if (playPauseBtn) { playPauseBtn.innerText = "Play"; playPauseBtn.classList.remove('active'); }
+            playPauseBtn.innerText = "Play"; playPauseBtn.classList.remove('active');
         } else {
             startPlayback(pauseOffset % audioBuffer.duration);
         }
     }
 
     function loadSample(fileName, label) {
-        fetch(fileName).then(res => {
-            if(!res.ok) throw new Error("CORS or 404");
-            return res.arrayBuffer();
-        }).then(buffer => {
+        fetch(fileName).then(res => { if(!res.ok) throw new Error(); return res.arrayBuffer(); }).then(buffer => {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             audioCtx.decodeAudioData(buffer, (decoded) => {
-                audioBuffer = decoded;
-                if (displayTitle) displayTitle.innerText = label; 
+                audioBuffer = decoded; if (displayTitle) displayTitle.innerText = label; 
                 pauseOffset = 0; startPlayback(0); isInitialized = true;
-                nodes = [new SwarmNode(0, canvas.width/2, canvas.height/2)]; lastEvolutionTime = 0;
+                nodes = [new SwarmNode(0, (canvas.width/dpr)/2, (canvas.height/dpr)/2)]; lastEvolutionTime = 0;
             });
         }).catch(err => {
             const notice = document.getElementById('error-notice');
-            if (notice) {
-                notice.style.color = "#ff3366";
-                notice.innerHTML = "<span class='keep-together'>エラー：ローカルサーバーが必要です。</span><span class='keep-together'>「Import MP3」を使用してください。</span>";
-            }
+            if (notice) notice.innerHTML = "<span class='keep-together' style='color:#ff3366'>エラー：公開サーバー経由で実行してください。</span>";
         });
     }
     window.loadSample = loadSample;
@@ -487,10 +501,9 @@
         const reader = new FileReader();
         reader.onload = (ev) => {
             audioCtx.decodeAudioData(ev.target.result, (buf) => {
-                audioBuffer = buf; 
-                if (displayTitle) displayTitle.innerText = e.target.files[0].name;
+                audioBuffer = buf; if (displayTitle) displayTitle.innerText = e.target.files[0].name;
                 pauseOffset = 0; startPlayback(0); isInitialized = true;
-                nodes = [new SwarmNode(0, canvas.width/2, canvas.height/2)]; lastEvolutionTime = 0;
+                nodes = [new SwarmNode(0, (canvas.width/dpr)/2, (canvas.height/dpr)/2)]; lastEvolutionTime = 0;
             });
         };
         reader.readAsArrayBuffer(e.target.files[0]);
@@ -535,26 +548,38 @@
             const avg = s / dataArray.length / 255; const bassAvg = b / 15 / 255; const fAvg = f / dataArray.length / 255;
             globalVol = avg; if (!prevDataArray) prevDataArray = new Uint8Array(256); prevDataArray.set(dataArray);
             const hue = (pIndex / 128) * 360 + (Date.now() * 0.003 % 360);
+            
             if (isInitialized) {
                 mount.style.setProperty('--frame-glow', `hsla(${hue}, 70%, 70%, ${avg * 0.8})`);
                 mount.style.borderColor = `hsla(${hue}, 60%, 80%, ${0.1 + avg * 0.5})`;
                 mount.style.boxShadow = `0 0 45px hsla(${hue}, 80%, 50%, ${avg * 0.6}), inset 0 0 100px hsla(${hue}, 80%, 15%, ${bassAvg * 0.4})`;
                 vignette.style.transform = `scale(${1 + fAvg * 0.15})`; vignette.style.opacity = 0.4 + avg * 0.6;
             }
+
             if (currentMode !== 'BANG' && isInitialized && isPlaying && fAvg > 0.24) triggerBang();
+
             ctx.fillStyle = 'rgba(1, 1, 6, 0.2)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
             bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
             particles.forEach(p => { p.update(bassAvg); p.draw(hue, bassAvg); });
             uictx.clearRect(0, 0, uiCanvas.width, uiCanvas.height);
+            
             mount.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
             nodeDisplay.innerText = `NODES: ${nodes.length}`;
             nodes.forEach((n, i) => { n.update(isInitialized ? dataArray[i % 32]/255 : 0, fAvg, nodes); n.draw(hue); });
+            
+            // --- イコライザー修正版：位置と座標をDPRに合わせて再定義 ---
             uictx.save();
-            for (let i = 0; i < 20; i++) {
-                const h = (dataArray[i] / 255) * 55; if (h <= 0) continue;
-                uictx.fillStyle = `hsla(${hue}, 10%, 100%, 0.15)`;
-                uictx.fillRect((uiCanvas.width/2) + i*14, uiCanvas.height - 90 - h, 2, h);
-                uictx.fillRect((uiCanvas.width/2) - i*14, uiCanvas.height - 90 - h, 2, h);
+            const barCount = 24, barGap = 12 * dpr, barW = 2.5 * dpr;
+            const startX = uiCanvas.width / 2 - (barCount * barGap) / 2;
+            const baselineY = uiCanvas.height - 120 * dpr; // 描画位置を上に移動
+            for (let i = 0; i < barCount; i++) {
+                const val = dataArray[i] || 0;
+                const h = (val / 255) * 65 * dpr;
+                if (h <= 0) continue;
+                uictx.fillStyle = `hsla(${hue}, 80%, 90%, 0.3)`;
+                uictx.shadowBlur = 15 * dpr; 
+                uictx.shadowColor = `hsla(${hue}, 80%, 50%, 0.6)`;
+                uictx.fillRect(startX + i * barGap, baselineY - h, barW, h);
             }
             uictx.restore();
         }
