@@ -34,6 +34,7 @@
             overflow-wrap: anywhere;
             letter-spacing: 0.3em;
             text-transform: uppercase;
+            font-weight: 100;
         }
         p { 
             text-wrap: pretty;
@@ -55,13 +56,14 @@
             z-index: 1; pointer-events: none;
         }
 
-        /* --- レイアウト --- */
-        section { padding: 100px 8%; position: relative; z-index: 20; }
+        /* --- レイアウト構造 --- */
+        section { padding: 80px 8%; position: relative; z-index: 20; }
         .container { max-width: 1100px; margin: 0 auto; }
 
-        h1 { font-size: clamp(2.2rem, 8vw, 5.5rem); margin-bottom: 10px; line-height: 1.1; font-weight: 100; }
+        h1 { font-size: clamp(2.2rem, 8vw, 5.5rem); margin-bottom: 10px; line-height: 1.1; }
         .hero-sub { font-size: 0.7rem; color: var(--accent); letter-spacing: 0.4em; margin-bottom: 30px; }
 
+        /* --- Hero --- */
         #hero {
             min-height: 100vh;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -117,7 +119,7 @@
             outline: none;
         }
         .btn-zen:hover { color: #fff; border-color: var(--accent); background: rgba(51, 102, 255, 0.08); }
-        .btn-zen.primary { border-color: var(--accent); color: #fff; }
+        .btn-zen.primary { border-color: var(--accent); color: #fff; background: rgba(51, 102, 255, 0.05); }
 
         .mystic-link {
             display: inline-block; margin-top: 40px; padding: 18px 45px; background: #fff; color: #000;
@@ -170,9 +172,7 @@
 
     <!-- コントロール -->
     <div class="hero-controls">
-        <!-- 再生・一時停止 -->
         <button class="btn-zen primary" id="play-pause-btn" onclick="togglePlayback()">Play</button>
-        
         <button class="btn-zen" onclick="loadSample('track1.mp3', 'コーヒーの湯気')">Coffee Steam</button>
         <button class="btn-zen" onclick="loadSample('track2.mp3', '雨上がりブレンド')">After Rain</button>
         <button class="btn-zen" onclick="loadSample('track3.mp3', '午後のカップと君')">Afternoon Cup</button>
@@ -243,8 +243,8 @@
         <p style="margin: 0 auto 10px;">
             <span class="keep-together">Codequariumは、</span><span class="keep-together">音楽と計算が</span><span class="keep-together">融合する</span><span class="keep-together">実験的な</span><span class="keep-together">デジタル水槽です。</span>
         </p>
-        <p style="font-size: 11px; opacity: 0.5; margin-bottom: 30px;">
-            <span class="keep-together">※サンプル再生は</span><span class="keep-together">ローカルサーバー経由で</span><span class="keep-together">動作します。</span>
+        <p id="error-notice" style="font-size: 11px; opacity: 0.5; margin-bottom: 30px;">
+            <span class="keep-together">※サンプル再生には</span><span class="keep-together">ローカルサーバー（Live Server等）が</span><span class="keep-together">必要です。</span>
         </p>
         <a href="https://www.threads.net/@hogushiya_kida?xmt=AQF0jg1JRo6B5FOakS_Gv36JaTHkwzBeYu6f729XkxglZCo" class="mystic-link" target="_blank">Connect on Threads / <span class="keep-together">Threadsで繋がる</span></a>
     </div>
@@ -277,7 +277,7 @@
     let startTime = 0, pauseOffset = 0;
     let currentMode = 'FLOW', globalVol = 0;
     
-    // マウス・インタラクション
+    // マウス・インタラクション管理
     let mouse = { x: 0, y: 0, globalX: 0, globalY: 0, active: false, down: false, influence: 0 };
     let dragNode = null; 
     let rotateX = 0, rotateY = 0;
@@ -322,18 +322,20 @@
                 this.p.targetX = this.p.x; this.p.targetY = this.p.y;
             } else {
                 const t = Date.now() * 0.00005;
-                const cx = canvas.width / 2; const cy = canvas.height / 2;
+                const cx = canvas.width / 2, cy = canvas.height / 2;
                 let tx = cx + Math.sin(t * (0.6 + this.id * 0.08) + this.noiseSeedX) * (canvas.width * 0.32);
                 let ty = cy + Math.cos(t * (0.5 + this.id * 0.12) + this.noiseSeedY) * (canvas.height * 0.32);
                 
+                // マウス・インタラクション（減衰対応）
                 if (mouse.influence > 0.01) {
                     const dx = mouse.x - this.p.x, dy = mouse.y - this.p.y;
                     const d = Math.sqrt(dx * dx + dy * dy) || 0.01;
                     if (d < 300) { 
-                        const force = (1 - d / 300) * 45 * mouse.influence;
+                        const force = (1 - d / 300) * 50 * mouse.influence;
                         tx += (dx / d) * force; ty += (dy / d) * force; 
                     }
                 }
+
                 nodes.forEach(other => {
                     if (other === this) return;
                     const dx = other.p.x - this.p.x, dy = other.p.y - this.p.y;
@@ -384,10 +386,15 @@
             const dx = this.x - cx, dy = this.y - cy, dist = Math.sqrt(dx*dx + dy*dy) || 1;
             this.vx += (dx / dist) * bass * 0.38;
             if (currentMode === 'BANG') { this.vx += (dx / dist) * 1.8; this.vy += (dy / dist) * 1.8; }
+            
+            // カーソル回避
             if (mouse.influence > 0.01) {
                 const mdx = this.x - mouse.globalX, mdy = this.y - mouse.globalY;
                 const mdist = Math.sqrt(mdx*mdx + mdy*mdy) || 1;
-                if (mdist < 300) { const f = (1 - mdist/300) * 2.2 * mouse.influence; this.vx += (mdx/mdist)*f; this.vy += (mdy/mdist)*f; }
+                if (mdist < 300) { 
+                    const f = (1 - mdist/300) * 2.8 * mouse.influence; 
+                    this.vx += (mdx/mdist)*f; this.vy += (mdy/mdist)*f; 
+                }
             }
             this.x += flowX + this.vx; this.y += flowY + this.vy; this.vx *= 0.93; this.vy *= 0.93;
             if (this.x < -200 || this.x > bgCanvas.width + 200 || this.y < -200 || this.y > bgCanvas.height + 200) this.init(false);
@@ -474,25 +481,30 @@
         if (!audioBuffer) return;
         if (isPlaying) {
             pauseOffset = audioCtx.currentTime - startTime;
-            source.stop();
-            isPlaying = false;
+            source.stop(); isPlaying = false;
             playPauseBtn.innerText = "Play";
             playPauseBtn.classList.remove('primary');
         } else {
             startPlayback(pauseOffset % audioBuffer.duration);
         }
     }
-    window.togglePlayback = togglePlayback;
 
     function loadSample(fileName, label) {
-        fetch(fileName).then(res => res.arrayBuffer()).then(buffer => {
+        fetch(fileName).then(res => {
+            if(!res.ok) throw new Error("Network response was not ok");
+            return res.arrayBuffer();
+        }).then(buffer => {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             audioCtx.decodeAudioData(buffer, (decoded) => {
                 audioBuffer = decoded; displayTitle.innerText = label; 
                 pauseOffset = 0; startPlayback(0); isInitialized = true;
                 nodes = [new SwarmNode(0, canvas.width/2, canvas.height/2)]; lastEvolutionTime = 0;
             });
-        }).catch(err => console.warn("Sample Load Error."));
+        }).catch(err => {
+            const notice = document.getElementById('error-notice');
+            notice.style.color = "#ff3366";
+            notice.innerHTML = "<span class='keep-together'>エラー：ローカルサーバーが必要です。</span><span class='keep-together'>「Import MP3」を使用してください。</span>";
+        });
     }
     window.loadSample = loadSample;
 
@@ -528,8 +540,12 @@
         requestAnimationFrame(animate);
         
         // インタラクション減衰
-        if (mouse.active) mouse.influence += (1 - mouse.influence) * 0.1;
-        else { mouse.influence += (0 - mouse.influence) * 0.05; rotateX *= 0.95; rotateY *= 0.95; }
+        if (mouse.active) {
+            mouse.influence += (1 - mouse.influence) * 0.1;
+        } else {
+            mouse.influence += (0 - mouse.influence) * 0.05;
+            rotateX *= 0.95; rotateY *= 0.95;
+        }
 
         if (isInitialized && isPlaying) { 
             analyser.getByteFrequencyData(dataArray); 
