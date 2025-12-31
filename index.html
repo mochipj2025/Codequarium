@@ -44,7 +44,7 @@
         }
         .keep-together { display: inline-block; }
 
-        /* --- エフェクトレイヤー --- */
+        /* --- 背景・ビネット --- */
         #vignette {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.95) 150%);
@@ -57,7 +57,7 @@
         }
 
         /* --- セクション構造 --- */
-        section { padding: 80px 8%; position: relative; z-index: 20; }
+        section { padding: 100px 8%; position: relative; z-index: 20; }
         .container { max-width: 1100px; margin: 0 auto; }
 
         h1 { font-size: clamp(2.2rem, 8vw, 5.5rem); margin-bottom: 10px; line-height: 1.1; }
@@ -154,7 +154,7 @@
     <div class="container" style="text-align: center;">
         <div class="hero-sub">The Coding Aquarium Project / <span class="keep-together">コードで描かれた水槽</span></div>
         <h1>Codequarium</h1>
-        <p style="margin: 0 auto 35px; max-width: 500px;">
+        <p style="margin: 0 auto 35px; max-width: 550px;">
             <span class="keep-together">計算が呼吸し、</span><span class="keep-together">旋律が鼓動へと変わる。</span><br>
             <span class="keep-together">コードで描かれた</span><span class="keep-together">深淵の生態系。</span>
         </p>
@@ -244,7 +244,7 @@
             <span class="keep-together">Codequariumは、</span><span class="keep-together">音楽と計算が</span><span class="keep-together">融合する</span><span class="keep-together">実験的な</span><span class="keep-together">デジタル水槽です。</span>
         </p>
         <p id="error-notice" style="font-size: 11px; opacity: 0.5; margin-bottom: 30px;">
-            <span class="keep-together">※サンプル再生には</span><span class="keep-together">ローカルサーバー（GitHub Pages等）が</span><span class="keep-together">必要です。</span>
+            <span class="keep-together">※サンプル再生には</span><span class="keep-together">ローカルサーバー（Live Server等）が</span><span class="keep-together">必要です。</span>
         </p>
         <a href="https://www.threads.net/@hogushiya_kida?xmt=AQF0jg1JRo6B5FOakS_Gv36JaTHkwzBeYu6f729XkxglZCo" class="mystic-link" target="_blank">Connect on Threads / <span class="keep-together">Threadsで繋がる</span></a>
     </div>
@@ -256,7 +256,7 @@
 
 <script>
     /**
-     * CODEQUARIUM CORE ENGINE - Fixed Audio Context & Interaction
+     * CODEQUARIUM CORE ENGINE - Fixed Audio Context & Interaction Loop
      */
     const bgCanvas = document.getElementById('background-layer');
     const canvas = document.getElementById('art-canvas');
@@ -277,7 +277,6 @@
     let startTime = 0, pauseOffset = 0;
     let currentMode = 'FLOW', globalVol = 0;
     
-    // マウス位置管理
     let mouse = { x: 0, y: 0, globalX: 0, globalY: 0, active: false, down: false, influence: 0 };
     let dragNode = null; 
     let rotateX = 0, rotateY = 0;
@@ -330,7 +329,7 @@
                     const dx = mouse.x - this.p.x, dy = mouse.y - this.p.y;
                     const d = Math.sqrt(dx * dx + dy * dy) || 0.01;
                     if (d < 300) { 
-                        const force = (1 - d / 300) * 45 * mouse.influence;
+                        const force = (1 - d / 300) * 50 * mouse.influence;
                         tx += (dx / d) * force; ty += (dy / d) * force; 
                     }
                 }
@@ -387,7 +386,7 @@
             if (mouse.influence > 0.01) {
                 const mdx = this.x - mouse.globalX, mdy = this.y - mouse.globalY;
                 const mdist = Math.sqrt(mdx*mdx + mdy*mdy) || 1;
-                if (mdist < 300) { const f = (1 - mdist/300) * 2.2 * mouse.influence; this.vx += (mdx/mdist)*f; this.vy += (mdy/mdist)*f; }
+                if (mdist < 300) { const f = (1 - mdist/300) * 2.8 * mouse.influence; this.vx += (mdx/mdist)*f; this.vy += (mdy/mdist)*f; }
             }
             this.x += flowX + this.vx; this.y += flowY + this.vy; this.vx *= 0.93; this.vy *= 0.93;
             if (this.x < -200 || this.x > bgCanvas.width + 200 || this.y < -200 || this.y > bgCanvas.height + 200) this.init(false);
@@ -456,37 +455,50 @@
     window.addEventListener('mouseup', () => { mouse.down = false; if (dragNode) { dragNode.isDragging = false; dragNode = null; } });
     mount.addEventListener('mouseleave', () => { mouse.active = false; });
 
-    // --- 音響コントロール ---
+    // --- 音響コントロール（エラー修正版） ---
     function startPlayback(offset) {
         if (!audioBuffer) return;
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (!analyser) analyser = audioCtx.createAnalyser();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
         
-        if (source) source.stop();
+        // アナライザーの確実な初期化
+        if (!analyser) {
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 512;
+            analyser.connect(audioCtx.destination);
+        }
+        
+        if (source) {
+            try { source.stop(); } catch(e) {}
+            source.disconnect();
+        }
+
         source = audioCtx.createBufferSource();
         source.buffer = audioBuffer;
-        source.connect(analyser);
-        analyser.connect(audioCtx.destination);
         
-        source.start(0, offset);
-        startTime = audioCtx.currentTime - offset;
-        isPlaying = true;
-        playPauseBtn.innerText = "Pause";
-        playPauseBtn.classList.add('active');
+        // 接続先を確実にチェック
+        if (analyser) {
+            source.connect(analyser);
+            source.start(0, offset);
+            startTime = audioCtx.currentTime - offset;
+            isPlaying = true;
+            playPauseBtn.innerText = "Pause";
+            playPauseBtn.classList.add('active');
+        }
     }
 
     function togglePlayback() {
         if (!audioBuffer) return;
         if (isPlaying) {
             pauseOffset = audioCtx.currentTime - startTime;
-            source.stop(); isPlaying = false;
+            if (source) source.stop();
+            isPlaying = false;
             playPauseBtn.innerText = "Play";
             playPauseBtn.classList.remove('active');
         } else {
             startPlayback(pauseOffset % audioBuffer.duration);
         }
     }
-    window.togglePlayback = togglePlayback;
 
     function loadSample(fileName, label) {
         fetch(fileName).then(res => {
@@ -495,14 +507,17 @@
         }).then(buffer => {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             audioCtx.decodeAudioData(buffer, (decoded) => {
-                audioBuffer = decoded; displayTitle.innerText = label; 
+                audioBuffer = decoded;
+                if (displayTitle) displayTitle.innerText = label; 
                 pauseOffset = 0; startPlayback(0); isInitialized = true;
                 nodes = [new SwarmNode(0, canvas.width/2, canvas.height/2)]; lastEvolutionTime = 0;
             });
         }).catch(err => {
             const notice = document.getElementById('error-notice');
-            notice.style.color = "#ff3366";
-            notice.innerHTML = "<span class='keep-together'>エラー：ローカルサーバーが必要です。</span><span class='keep-together'>「Import MP3」を使用してください。</span>";
+            if (notice) {
+                notice.style.color = "#ff3366";
+                notice.innerHTML = "<span class='keep-together'>エラー：ローカルサーバーが必要です。</span><span class='keep-together'>「Import MP3」を使用してください。</span>";
+            }
         });
     }
     window.loadSample = loadSample;
@@ -512,7 +527,8 @@
         const reader = new FileReader();
         reader.onload = (ev) => {
             audioCtx.decodeAudioData(ev.target.result, (buf) => {
-                audioBuffer = buf; displayTitle.innerText = e.target.files[0].name;
+                audioBuffer = buf; 
+                if (displayTitle) displayTitle.innerText = e.target.files[0].name;
                 pauseOffset = 0; startPlayback(0); isInitialized = true;
                 nodes = [new SwarmNode(0, canvas.width/2, canvas.height/2)]; lastEvolutionTime = 0;
             });
@@ -538,57 +554,63 @@
     function animate() {
         requestAnimationFrame(animate);
         
-        // インタラクション減衰
-        if (mouse.active) mouse.influence += (1 - mouse.influence) * 0.1;
-        else { mouse.influence += (0 - mouse.influence) * 0.05; rotateX *= 0.95; rotateY *= 0.95; }
+        // インタラクション減衰・復帰（滑らかな戻り）
+        if (mouse.active) {
+            mouse.influence += (1 - mouse.influence) * 0.1;
+        } else {
+            mouse.influence += (0 - mouse.influence) * 0.05;
+            rotateX *= 0.95; rotateY *= 0.95;
+        }
 
-        if (isInitialized && isPlaying) { 
+        if (isInitialized && isPlaying && analyser) { 
             analyser.getByteFrequencyData(dataArray); 
             const current = audioCtx.currentTime - startTime;
             if (current > lastEvolutionTime + EVOLUTION_INTERVAL && nodes.length < MAX_NODES) {
                 addEvolutionNode(); lastEvolutionTime = current;
             }
             if (current >= audioBuffer.duration) { isPlaying = false; playPauseBtn.innerText = "Play"; pauseOffset = 0; }
-        } else { dataArray.fill(0); }
+        } else { if (dataArray) dataArray.fill(0); }
         
         let s = 0, f = 0, b = 0, pIndex = 0;
-        for (let i = 0; i < dataArray.length; i++) { 
-            s += dataArray[i]; if (i < 15) b += dataArray[i];
-            f += Math.max(0, dataArray[i] - (prevDataArray ? prevDataArray[i] : 0)); 
-            if (dataArray[i] > (dataArray[pIndex] || 0)) { pIndex = i; }
-        }
-        const avg = s / dataArray.length / 255; const bassAvg = b / 15 / 255; const fAvg = f / dataArray.length / 255;
-        globalVol = avg; 
-        if (!prevDataArray) prevDataArray = new Uint8Array(256);
-        prevDataArray.set(dataArray);
+        if (dataArray) {
+            for (let i = 0; i < dataArray.length; i++) { 
+                s += dataArray[i]; if (i < 15) b += dataArray[i];
+                f += Math.max(0, dataArray[i] - (prevDataArray ? prevDataArray[i] : 0)); 
+                if (dataArray[i] > (dataArray[pIndex] || 0)) { pIndex = i; }
+            }
+            const avg = s / dataArray.length / 255; const bassAvg = b / 15 / 255; const fAvg = f / dataArray.length / 255;
+            globalVol = avg; 
+            if (!prevDataArray) prevDataArray = new Uint8Array(256);
+            prevDataArray.set(dataArray);
 
-        const hue = (pIndex / 128) * 360 + (Date.now() * 0.003 % 360);
-        if (isInitialized) {
-            mount.style.setProperty('--frame-glow', `hsla(${hue}, 70%, 70%, ${avg * 0.8})`);
-            mount.style.borderColor = `hsla(${hue}, 60%, 80%, ${0.1 + avg * 0.5})`;
-            mount.style.boxShadow = `0 0 45px hsla(${hue}, 80%, 50%, ${avg * 0.6}), inset 0 0 100px hsla(${hue}, 80%, 15%, ${bassAvg * 0.4})`;
-            vignette.style.transform = `scale(${1 + fAvg * 0.15})`; vignette.style.opacity = 0.4 + avg * 0.6;
-        }
+            const hue = (pIndex / 128) * 360 + (Date.now() * 0.003 % 360);
+            if (isInitialized) {
+                mount.style.setProperty('--frame-glow', `hsla(${hue}, 70%, 70%, ${avg * 0.8})`);
+                mount.style.borderColor = `hsla(${hue}, 60%, 80%, ${0.1 + avg * 0.5})`;
+                mount.style.boxShadow = `0 0 45px hsla(${hue}, 80%, 50%, ${avg * 0.6}), inset 0 0 100px hsla(${hue}, 80%, 15%, ${bassAvg * 0.4})`;
+                vignette.style.transform = `scale(${1 + fAvg * 0.15})`; vignette.style.opacity = 0.4 + avg * 0.6;
+            }
 
-        if (currentMode !== 'BANG' && isInitialized && isPlaying && fAvg > 0.24) triggerBang();
+            if (currentMode !== 'BANG' && isInitialized && isPlaying && fAvg > 0.24) triggerBang();
 
-        ctx.fillStyle = 'rgba(1, 1, 6, 0.2)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-        particles.forEach(p => { p.update(bassAvg); p.draw(hue, bassAvg); });
-        uictx.clearRect(0, 0, uiCanvas.width, uiCanvas.height);
-        
-        mount.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-        nodeDisplay.innerText = `NODES: ${nodes.length}`;
-        nodes.forEach((n, i) => { n.update(isInitialized ? dataArray[i % 32]/255 : 0, fAvg, nodes); n.draw(hue); });
-        
-        uictx.save();
-        for (let i = 0; i < 20; i++) {
-            const h = (dataArray[i] / 255) * 55; if (h <= 0) continue;
-            uictx.fillStyle = `hsla(${hue}, 10%, 100%, 0.15)`;
-            uictx.fillRect((uiCanvas.width/2) + i*14, uiCanvas.height - 90 - h, 2, h);
-            uictx.fillRect((uiCanvas.width/2) - i*14, uiCanvas.height - 90 - h, 2, h);
+            ctx.fillStyle = 'rgba(1, 1, 6, 0.2)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            particles.forEach(p => { p.update(bassAvg); p.draw(hue, bassAvg); });
+            uictx.clearRect(0, 0, uiCanvas.width, uiCanvas.height);
+            
+            mount.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+            nodeDisplay.innerText = `NODES: ${nodes.length}`;
+            nodes.forEach((n, i) => { n.update(isInitialized ? dataArray[i % 32]/255 : 0, fAvg, nodes); n.draw(hue); });
+            
+            uictx.save();
+            for (let i = 0; i < 20; i++) {
+                const h = (dataArray[i] / 255) * 55; if (h <= 0) continue;
+                uictx.fillStyle = `hsla(${hue}, 10%, 100%, 0.15)`;
+                uictx.fillRect((uiCanvas.width/2) + i*14, uiCanvas.height - 90 - h, 2, h);
+                uictx.fillRect((uiCanvas.width/2) - i*14, uiCanvas.height - 90 - h, 2, h);
+            }
+            uictx.restore();
         }
-        uictx.restore();
     }
 
     window.addEventListener('resize', syncSizes);
