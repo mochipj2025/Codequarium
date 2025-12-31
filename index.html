@@ -27,7 +27,7 @@
             width: 100%;
         }
 
-        /* --- タイポグラフィ最適化（孤立行防止） --- */
+        /* --- タイポグラフィ最適化 --- */
         h1, h2, h3 { 
             text-wrap: balance;
             word-break: keep-all; 
@@ -44,7 +44,7 @@
         }
         .keep-together { display: inline-block; }
 
-        /* --- 背景・ビネット --- */
+        /* --- エフェクト --- */
         #vignette {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.95) 150%);
@@ -56,7 +56,7 @@
             z-index: 1; pointer-events: none;
         }
 
-        /* --- セクション構造 --- */
+        /* --- レイアウト構造 --- */
         section { padding: 100px 8%; position: relative; z-index: 20; }
         .container { max-width: 1100px; margin: 0 auto; }
 
@@ -106,11 +106,6 @@
         .guide-num { font-family: 'JetBrains+Mono', monospace; color: var(--accent); font-size: 0.8rem; margin-bottom: 15px; display: block; opacity: 0.8; }
         .guide-item h3 { font-size: 0.75rem; margin-bottom: 12px; color: #fff; letter-spacing: 0.15em; line-height: 1.4; }
         .guide-item p { font-size: 0.8rem; }
-
-        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 60px; }
-        .feature-card { background: var(--card-bg); padding: 35px; border: 1px solid rgba(255, 255, 255, 0.04); transition: 0.4s; }
-        .feature-card:hover { border-color: var(--accent); transform: translateY(-8px); background: rgba(51, 102, 255, 0.02); }
-        .feature-card h3 { margin-bottom: 15px; font-size: 0.85rem; color: #fff; }
 
         .btn-zen {
             font-family: 'JetBrains+Mono', monospace; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
@@ -217,26 +212,6 @@
     </div>
 </section>
 
-<section id="features" style="background: rgba(255,255,255,0.01);">
-    <div class="container">
-        <h2>System Ecosystem / <span class="keep-together">生態系システム</span></h2>
-        <div class="feature-grid">
-            <div class="feature-card">
-                <h3>Bio-Fluid Physics / <span class="keep-together">生物流体物理学</span></h3>
-                <p><span class="keep-together">FFT周波数解析と</span><span class="keep-together">メタボール・フィルターにより、</span><span class="keep-together">軽量でありながら</span><span class="keep-together">重厚な流体質感を</span><span class="keep-together">ブラウザ上で</span><span class="keep-together">実現しました。</span></p>
-            </div>
-            <div class="feature-card">
-                <h3>Spectral Synthesis / <span class="keep-together">スペクトル合成</span></h3>
-                <p><span class="keep-together">音の高さ（ピッチ）を</span><span class="keep-together">解析し、</span><span class="keep-together">空間の色温度を</span><span class="keep-together">リアルタイムに制御。</span><span class="keep-together">音の感情を色彩として</span><span class="keep-together">可視化します。</span></p>
-            </div>
-            <div class="feature-card">
-                <h3>Vortex Circulation / <span class="keep-together">渦状循環</span></h3>
-                <p><span class="keep-together">背景に漂う粒子は</span><span class="keep-together">海洋循環を模した</span><span class="keep-together">流体場に従って動きます。</span><span class="keep-together">キック音に合わせた</span><span class="keep-together">拍動が没入感を</span><span class="keep-together">高めます。</span></p>
-            </div>
-        </div>
-    </div>
-</section>
-
 <section id="footer-section" style="text-align: center;">
     <div class="container">
         <h2>Enter the Void / <span class="keep-together">深淵へ</span></h2>
@@ -256,7 +231,7 @@
 
 <script>
     /**
-     * CODEQUARIUM CORE ENGINE - Fixed Audio Context & Interaction Loop
+     * CODEQUARIUM CORE ENGINE - Fixed Stability & Robust Interaction
      */
     const bgCanvas = document.getElementById('background-layer');
     const canvas = document.getElementById('art-canvas');
@@ -296,6 +271,7 @@
             this.targetX = x; this.targetY = y;
         }
         solve(dynamicBoost = 0) {
+            if (!isFinite(this.x) || !isFinite(this.y)) { this.x = canvas.width/2; this.y = canvas.height/2; this.vx=0; this.vy=0; }
             const dx = this.targetX - this.x;
             const dy = this.targetY - this.y;
             this.vx += dx * VISCOSITY; this.vy += dy * VISCOSITY;
@@ -327,7 +303,7 @@
                 
                 if (mouse.influence > 0.01) {
                     const dx = mouse.x - this.p.x, dy = mouse.y - this.p.y;
-                    const d = Math.sqrt(dx * dx + dy * dy) || 0.01;
+                    const d = Math.sqrt(dx * dx + dy * dy) || 1;
                     if (d < 300) { 
                         const force = (1 - d / 300) * 50 * mouse.influence;
                         tx += (dx / d) * force; ty += (dy / d) * force; 
@@ -336,10 +312,10 @@
                 nodes.forEach(other => {
                     if (other === this) return;
                     const dx = other.p.x - this.p.x, dy = other.p.y - this.p.y;
-                    const dist = Math.sqrt(dx*dx + dy*dy) || 0.01;
+                    const dist = Math.sqrt(dx*dx + dy*dy) || 5;
                     const minDist = (this.radius + other.radius) * 1.25;
                     if (dist < minDist) {
-                        const push = (minDist - dist) * 0.025;
+                        const push = (minDist - dist) * 0.02;
                         this.p.vx -= (dx / dist) * push; this.p.vy -= (dy / dist) * push;
                     }
                 });
@@ -356,7 +332,7 @@
             this.radius += (targetR - this.radius) * (targetR > this.radius ? 0.3 : 0.08);
         }
         draw(hue) {
-            if (!isFinite(this.p.x) || this.radius <= 1) return;
+            if (!isFinite(this.p.x) || !isFinite(this.p.y) || this.radius <= 1) return;
             const g = ctx.createRadialGradient(this.p.x, this.p.y, 0, this.p.x, this.p.y, this.radius);
             const intensity = (this.isDragging || currentMode === 'BANG') ? 1.0 : 0.68;
             g.addColorStop(0, `hsla(${hue}, 80%, 92%, ${intensity})`); 
@@ -455,46 +431,30 @@
     window.addEventListener('mouseup', () => { mouse.down = false; if (dragNode) { dragNode.isDragging = false; dragNode = null; } });
     mount.addEventListener('mouseleave', () => { mouse.active = false; });
 
-    // --- 音響コントロール（エラー修正版） ---
+    // --- 音響コントロール ---
     function startPlayback(offset) {
         if (!audioBuffer) return;
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (!analyser) { analyser = audioCtx.createAnalyser(); analyser.fftSize = 512; }
         
-        // アナライザーの確実な初期化
-        if (!analyser) {
-            analyser = audioCtx.createAnalyser();
-            analyser.fftSize = 512;
-            analyser.connect(audioCtx.destination);
-        }
-        
-        if (source) {
-            try { source.stop(); } catch(e) {}
-            source.disconnect();
-        }
-
+        if (source) { try { source.stop(); } catch(e) {} source.disconnect(); }
         source = audioCtx.createBufferSource();
         source.buffer = audioBuffer;
-        
-        // 接続先を確実にチェック
-        if (analyser) {
-            source.connect(analyser);
-            source.start(0, offset);
-            startTime = audioCtx.currentTime - offset;
-            isPlaying = true;
-            playPauseBtn.innerText = "Pause";
-            playPauseBtn.classList.add('active');
-        }
+        source.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        source.start(0, offset);
+        startTime = audioCtx.currentTime - offset;
+        isPlaying = true;
+        if (playPauseBtn) { playPauseBtn.innerText = "Pause"; playPauseBtn.classList.add('active'); }
     }
 
     function togglePlayback() {
         if (!audioBuffer) return;
         if (isPlaying) {
             pauseOffset = audioCtx.currentTime - startTime;
-            if (source) source.stop();
-            isPlaying = false;
-            playPauseBtn.innerText = "Play";
-            playPauseBtn.classList.remove('active');
+            if (source) source.stop(); isPlaying = false;
+            if (playPauseBtn) { playPauseBtn.innerText = "Play"; playPauseBtn.classList.remove('active'); }
         } else {
             startPlayback(pauseOffset % audioBuffer.duration);
         }
@@ -553,14 +513,8 @@
 
     function animate() {
         requestAnimationFrame(animate);
-        
-        // インタラクション減衰・復帰（滑らかな戻り）
-        if (mouse.active) {
-            mouse.influence += (1 - mouse.influence) * 0.1;
-        } else {
-            mouse.influence += (0 - mouse.influence) * 0.05;
-            rotateX *= 0.95; rotateY *= 0.95;
-        }
+        if (mouse.active) { mouse.influence += (1 - mouse.influence) * 0.1; } 
+        else { mouse.influence += (0 - mouse.influence) * 0.05; rotateX *= 0.95; rotateY *= 0.95; }
 
         if (isInitialized && isPlaying && analyser) { 
             analyser.getByteFrequencyData(dataArray); 
@@ -579,10 +533,7 @@
                 if (dataArray[i] > (dataArray[pIndex] || 0)) { pIndex = i; }
             }
             const avg = s / dataArray.length / 255; const bassAvg = b / 15 / 255; const fAvg = f / dataArray.length / 255;
-            globalVol = avg; 
-            if (!prevDataArray) prevDataArray = new Uint8Array(256);
-            prevDataArray.set(dataArray);
-
+            globalVol = avg; if (!prevDataArray) prevDataArray = new Uint8Array(256); prevDataArray.set(dataArray);
             const hue = (pIndex / 128) * 360 + (Date.now() * 0.003 % 360);
             if (isInitialized) {
                 mount.style.setProperty('--frame-glow', `hsla(${hue}, 70%, 70%, ${avg * 0.8})`);
@@ -590,18 +541,14 @@
                 mount.style.boxShadow = `0 0 45px hsla(${hue}, 80%, 50%, ${avg * 0.6}), inset 0 0 100px hsla(${hue}, 80%, 15%, ${bassAvg * 0.4})`;
                 vignette.style.transform = `scale(${1 + fAvg * 0.15})`; vignette.style.opacity = 0.4 + avg * 0.6;
             }
-
             if (currentMode !== 'BANG' && isInitialized && isPlaying && fAvg > 0.24) triggerBang();
-
             ctx.fillStyle = 'rgba(1, 1, 6, 0.2)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
             bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
             particles.forEach(p => { p.update(bassAvg); p.draw(hue, bassAvg); });
             uictx.clearRect(0, 0, uiCanvas.width, uiCanvas.height);
-            
             mount.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
             nodeDisplay.innerText = `NODES: ${nodes.length}`;
             nodes.forEach((n, i) => { n.update(isInitialized ? dataArray[i % 32]/255 : 0, fAvg, nodes); n.draw(hue); });
-            
             uictx.save();
             for (let i = 0; i < 20; i++) {
                 const h = (dataArray[i] / 255) * 55; if (h <= 0) continue;
