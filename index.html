@@ -22,7 +22,7 @@
             background-color: var(--bg);
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
-            line-height: 1.8;
+            line-height: 2.0; /* 行間を広げてさらに美しく */
             overflow-x: hidden;
             width: 100%;
             touch-action: manipulation;
@@ -33,7 +33,7 @@
         h1, h2, h3 { 
             text-wrap: balance;
             word-break: keep-all; 
-            letter-spacing: 0.3em;
+            letter-spacing: 0.4em;
             text-transform: uppercase;
             font-weight: 100;
         }
@@ -42,13 +42,14 @@
             max-width: 600px;
             color: var(--text-dim);
             font-weight: 300;
+            margin-bottom: 2rem;
         }
         .keep-together { display: inline-block; white-space: nowrap; }
 
-        /* --- 背景・ビネット --- */
+        /* --- エフェクトレイヤー --- */
         #vignette {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, transparent 35%, rgba(0,0,0,0.95) 150%);
+            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,1) 160%);
             z-index: 5; pointer-events: none;
         }
 
@@ -58,17 +59,17 @@
         }
 
         /* --- レイアウト構造 --- */
-        section { padding: 80px 8%; position: relative; z-index: 20; }
+        section { padding: 140px 10%; position: relative; z-index: 20; }
         .container { max-width: 1100px; margin: 0 auto; }
 
-        h1 { font-size: clamp(2.2rem, 8vw, 5.5rem); margin-bottom: 10px; line-height: 1.1; }
-        .hero-sub { font-size: 0.7rem; color: var(--accent); letter-spacing: 0.4em; margin-bottom: 30px; }
+        h1 { font-size: clamp(2.4rem, 8vw, 6rem); margin-bottom: 20px; line-height: 1.1; }
+        .hero-sub { font-size: 0.7rem; color: var(--accent); letter-spacing: 0.5em; margin-bottom: 40px; text-transform: uppercase; }
 
         /* --- Hero --- */
         #hero {
-            min-height: 100vh;
+            min-height: 110vh; /* 少し高さを出してゆとりを */
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            padding: 40px 0; overflow: hidden;
+            padding: 100px 0; overflow: hidden;
         }
 
         #visualizer-mount {
@@ -77,31 +78,29 @@
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.15);
             background: rgba(1, 1, 4, 0.98);
-            border-radius: 4px;
-            box-shadow: 0 0 60px var(--frame-glow);
+            border-radius: 8px; /* 角を少し丸めて柔らかく */
+            box-shadow: 0 0 80px var(--frame-glow);
             transform-style: preserve-3d;
             transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1), height 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.1s ease-out;
             margin: 0 auto;
         }
 
-        /* デスクトップ：標準 16:9 / 4:5 */
-        #visualizer-mount.ratio-16-9 { width: 90vw; height: calc(90vw * 9 / 16); max-width: 1000px; max-height: 562px; }
-        #visualizer-mount.ratio-4-5 { width: 80vw; height: calc(80vw * 5 / 4); max-width: 550px; max-height: 687px; }
+        #visualizer-mount.ratio-16-9 { width: 85vw; height: calc(85vw * 9 / 16); max-width: 1100px; max-height: 620px; }
+        #visualizer-mount.ratio-4-5 { width: 75vw; height: calc(75vw * 5 / 4); max-width: 550px; max-height: 700px; }
 
         @media (max-width: 600px) {
-            #hero { padding: 20px 0 10px; }
-            /* スマホ：操作範囲をさらに広げる（画面占有率アップ） */
-            #visualizer-mount.ratio-16-9 { width: 100vw; height: 60vh; border-left: none; border-right: none; }
-            #visualizer-mount.ratio-4-5 { width: 100vw; height: 75vh; border-left: none; border-right: none; } 
+            #hero { padding: 60px 0; }
+            /* スマホ：画面端に「呼吸できる余白」を確保 */
+            #visualizer-mount.ratio-16-9 { width: 92vw; height: calc(92vw * 10 / 16); }
+            #visualizer-mount.ratio-4-5 { width: 90vw; height: 125vw; } 
             
-            section { padding: 60px 20px; }
-            .hero-controls { gap: 6px; }
-            .btn-zen { padding: 10px 10px; font-size: 7px; letter-spacing: 0.05em; }
+            section { padding: 100px 24px; }
+            .hero-controls { gap: 10px; margin-top: 40px; }
+            .btn-zen { padding: 12px 14px; font-size: 8px; letter-spacing: 0.1em; }
         }
 
         #fluid-engine {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            /* ぼかしとコントラストを強めてエッジをシャープに */
             filter: blur(20px) contrast(120) brightness(1.1);
             pointer-events: none; z-index: 2;
         }
@@ -109,31 +108,41 @@
         canvas { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
         .hero-controls {
-            margin-top: 25px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; z-index: 30;
+            margin-top: 50px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; z-index: 30;
             max-width: 95vw;
         }
 
+        /* --- UI Components --- */
+        .guide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 50px; margin-top: 80px; }
+        .guide-item { padding: 30px; border-left: 1px solid rgba(255,255,255,0.08); transition: 0.4s; }
+        .guide-item:hover { border-left-color: var(--accent); background: rgba(255,255,255,0.02); }
+        .guide-num { font-family: 'JetBrains+Mono', monospace; color: var(--accent); font-size: 0.8rem; margin-bottom: 20px; display: block; opacity: 0.8; }
+        .guide-item h3 { font-size: 0.8rem; margin-bottom: 15px; color: #fff; letter-spacing: 0.2em; line-height: 1.5; }
+        .guide-item p { font-size: 0.85rem; line-height: 1.8; margin-bottom: 0; }
+
         .btn-zen {
-            font-family: 'JetBrains+Mono', monospace; font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
+            font-family: 'JetBrains+Mono', monospace; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
             color: var(--text-dim); background: transparent; border: 1px solid rgba(255, 255, 255, 0.12);
-            padding: 12px 18px; cursor: pointer; transition: 0.3s;
+            padding: 14px 22px; cursor: pointer; transition: 0.3s;
             outline: none; -webkit-tap-highlight-color: transparent;
+            border-radius: 2px;
         }
-        .btn-zen:hover { color: #fff; border-color: var(--accent); background: rgba(51, 102, 255, 0.08); }
-        .btn-zen.active { border-color: var(--accent); color: #fff; background: rgba(51, 102, 255, 0.05); }
+        .btn-zen:hover { color: #fff; border-color: var(--accent); background: rgba(51, 102, 255, 0.1); }
+        .btn-zen.active { border-color: var(--accent); color: #fff; background: rgba(51, 102, 255, 0.08); }
 
         .mystic-link {
-            display: inline-block; margin-top: 40px; padding: 18px 45px; background: #fff; color: #000;
-            text-decoration: none; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.75rem;
-            transition: 0.3s;
+            display: inline-block; margin-top: 60px; padding: 22px 55px; background: #fff; color: #000;
+            text-decoration: none; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3em; font-size: 0.75rem;
+            transition: 0.4s; border-radius: 2px;
         }
-        .mystic-link:hover { background: var(--accent); color: white; transform: scale(1.05); }
+        .mystic-link:hover { background: var(--accent); color: white; transform: translateY(-5px); box-shadow: 0 10px 40px rgba(51, 102, 255, 0.3); }
 
         .mount-hud {
-            position: absolute; top: 15px; left: 20px; right: 20px;
+            position: absolute; top: 18px; left: 24px; right: 24px;
             display: flex; justify-content: space-between;
             z-index: 20; pointer-events: none;
-            font-family: 'JetBrains+Mono', monospace; font-size: 7px; opacity: 0.6;
+            font-family: 'JetBrains+Mono', monospace; font-size: 8px; opacity: 0.6;
+            letter-spacing: 0.2em;
         }
         
         #ui-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
@@ -145,10 +154,10 @@
 <canvas id="background-layer"></canvas>
 
 <div id="hero">
-    <div class="container" style="text-align: center;">
+    <div class="container" style="text-align: center; margin-bottom: 20px;">
         <div class="hero-sub">The Coding Aquarium Project / <span class="keep-together">コードで描かれた水槽</span></div>
         <h1>Codequarium</h1>
-        <p style="margin: 0 auto 25px; max-width: 550px;">
+        <p style="margin: 0 auto 40px; max-width: 580px;">
             <span class="keep-together">計算が呼吸し、</span><span class="keep-together">旋律が鼓動へと変わる。</span><br>
             <span class="keep-together">コードで描かれた</span><span class="keep-together">深淵の生態系。</span>
         </p>
@@ -183,54 +192,54 @@
                 <span class="guide-num">01</span>
                 <h3>Invoke Sound / <span class="keep-together">音楽を呼び覚ます</span></h3>
                 <p>
-                    <span class="keep-together">ライブラリから</span><span class="keep-together">曲を選ぶか、</span><span class="keep-together">手持ちのファイルを</span><span class="keep-together">読み込ませてください。</span><span class="keep-together">iPhoneの方は</span><span class="keep-together">「ファイル」アプリ内の</span><span class="keep-together">曲が選択可能です。</span>
+                    <span class="keep-together">ライブラリから曲を選び、</span><span class="keep-together">静寂に包まれた水槽に</span><span class="keep-together">生命を宿してください。</span><span class="keep-together">iPhoneの方は「ファイル」アプリ内の</span><span class="keep-together">曲が選択可能です。</span>
                 </p>
             </div>
             <div class="guide-item">
                 <span class="guide-num">02</span>
                 <h3>Manipulate Fluid / <span class="keep-together">流体をかき混ぜる</span></h3>
                 <p>
-                    <span class="keep-together">画面内のスライムを</span><span class="keep-together">ドラッグして</span><span class="keep-together">かき混ぜてください。</span><span class="keep-together">物理演算による</span><span class="keep-together">粘性と、</span><span class="keep-together">放した瞬間の</span><span class="keep-together">慣性を体験できます。</span>
+                    <span class="keep-together">画面内のスライムを</span><span class="keep-together">ドラッグしてかき混ぜます。</span><span class="keep-together">物理演算による粘性と、</span><span class="keep-together">放した瞬間の</span><span class="keep-together">慣性を体験できます。</span>
                 </p>
             </div>
             <div class="guide-item">
                 <span class="guide-num">03</span>
                 <h3>Observe Evolution / <span class="keep-together">進化を観察する</span></h3>
                 <p>
-                    <span class="keep-together">音楽のエネルギーが</span><span class="keep-together">高まると、</span><span class="keep-together">核は最大16個まで</span><span class="keep-together">自己分裂します。</span><span class="keep-together">それぞれの個体が</span><span class="keep-together">独立した意思を</span><span class="keep-together">持つかのように</span><span class="keep-together">泳ぎ回ります。</span>
+                    <span class="keep-together">旋律のエネルギーが高まると、</span><span class="keep-together">核は最大16個まで自己分裂し、</span><span class="keep-together">それぞれの個体が独立した</span><span class="keep-together">意思を持つかのように泳ぎ回ります。</span>
                 </p>
             </div>
             <div class="guide-item">
                 <span class="guide-num">04</span>
                 <h3>Feel the Recovery / <span class="keep-together">静寂への回帰</span></h3>
                 <p>
-                    <span class="keep-together">マウスを離すと、</span><span class="keep-together">空間の傾きや</span><span class="keep-together">粒子への干渉は</span><span class="keep-together">ゆっくりと収束し、</span><span class="keep-together">世界は元の</span><span class="keep-together">穏やかな状態へと</span><span class="keep-together">戻ります。</span>
+                    <span class="keep-together">マウスを離すと、</span><span class="keep-together">空間の傾きや粒子への干渉は</span><span class="keep-together">ゆっくりと収束し、世界は</span><span class="keep-together">元の穏やかな静止状態へと戻ります。</span>
                 </p>
             </div>
         </div>
     </div>
 </section>
 
-<section id="footer-section" style="text-align: center;">
+<section id="footer-section" style="text-align: center; border-top: 1px solid rgba(255,255,255,0.05);">
     <div class="container">
         <h2>Enter the Void / <span class="keep-together">深淵へ</span></h2>
         <p style="margin: 0 auto 10px;">
-            <span class="keep-together">Codequariumは、</span><span class="keep-together">音楽と計算が</span><span class="keep-together">融合する</span><span class="keep-together">実験的な</span><span class="keep-together">デジタル水槽です。</span>
+            <span class="keep-together">Codequariumは、音楽と計算が</span><span class="keep-together">融合する実験的なデジタル水槽です。</span>
         </p>
-        <p id="error-notice" style="font-size: 11px; opacity: 0.5; margin-bottom: 30px;">
-            <span class="keep-together">※iPhoneで音楽が</span><span class="keep-together">選択できない場合は、</span><span class="keep-together">ミュージックアプリではなく</span><span class="keep-together">「ファイル」アプリ内の</span><span class="keep-together">曲を選んでください。</span>
+        <p id="error-notice" style="font-size: 11px; opacity: 0.5; margin-bottom: 50px;">
+            <span class="keep-together">※スマホでの再生は、画面を</span><span class="keep-together">一度タップした後に可能になります。</span>
         </p>
         <a href="https://www.threads.net/@hogushiya_kida?xmt=AQF0jg1JRo6B5FOakS_Gv36JaTHkwzBeYu6f729XkxglZCo" class="mystic-link" target="_blank">Connect on Threads / <span class="keep-together">Threadsで繋がる</span></a>
     </div>
 </section>
 
-<footer style="padding: 60px; text-align: center; font-size: 8px; opacity: 0.3; letter-spacing: 0.5em;">
+<footer style="padding: 100px 60px; text-align: center; font-size: 9px; opacity: 0.3; letter-spacing: 0.6em;">
     &copy; 2025 CODEQUARIUM PROJECT. CRAFTED BY CODE.
 </footer>
 
 <script>
     /**
-     * CODEQUARIUM CORE ENGINE - Stability Fix Version
+     * CODEQUARIUM CORE ENGINE - Spacing & Stability Fixed
      */
     const bgCanvas = document.getElementById('background-layer');
     const canvas = document.getElementById('art-canvas');
@@ -265,7 +274,6 @@
     const VISCOSITY = 0.012; 
     const BASE_SPEED_LIMIT = 0.45;
 
-    // --- Audio Init Helper for iOS ---
     function wakeAudio() {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -293,7 +301,7 @@
                 if (mouse.influence > 0.01) {
                     const dx = mouse.x - this.x, dy = mouse.y - this.y;
                     const d = Math.sqrt(dx * dx + dy * dy) || 1;
-                    if (d < 300) { tx += (dx / d) * (50 * mouse.influence); ty += (dy / d) * (50 * mouse.influence); }
+                    if (d < 300) { tx += (dx / d) * (55 * mouse.influence); ty += (dy / d) * (55 * mouse.influence); }
                 }
 
                 nodes.forEach(other => {
@@ -301,34 +309,33 @@
                     const dx = other.x - this.x, dy = other.y - this.y;
                     const dist = Math.sqrt(dx*dx + dy*dy) || 5;
                     const minDist = (this.radius + other.radius) * 1.5;
-                    if (dist < minDist) { this.vx -= (dx / dist) * 0.02; this.vy -= (dy / dist) * 0.02; }
+                    if (dist < minDist) { this.vx -= (dx / dist) * 0.025; this.vy -= (dy / dist) * 0.025; }
                 });
 
                 this.vx += (tx - this.x) * VISCOSITY; this.vy += (ty - this.y) * VISCOSITY;
-                const limit = BASE_SPEED_LIMIT + flux * 0.5;
+                const limit = BASE_SPEED_LIMIT + flux * 0.6;
                 const speed = Math.sqrt(this.vx*this.vx + this.vy*this.vy) || 0.01;
                 if (speed > limit) { this.vx = (this.vx/speed)*limit; this.vy = (this.vy/speed)*limit; }
                 this.x += this.vx; this.y += this.vy;
                 this.vx *= FRICTION; this.vy *= FRICTION;
             }
 
-            const pad = this.radius + 15;
-            if (this.x < pad) { this.vx = Math.abs(this.vx) * 0.5; this.x = pad; }
-            if (this.x > logicalW - pad) { this.vx = -Math.abs(this.vx) * 0.5; this.x = logicalW - pad; }
-            if (this.y < pad) { this.vy = Math.abs(this.vy) * 0.5; this.y = pad; }
-            if (this.y > logicalH - pad) { this.vy = -Math.abs(this.vy) * 0.5; this.y = logicalH - pad; }
+            const pad = this.radius + 10;
+            if (this.x < pad) { this.vx = Math.abs(this.vx) * 0.6; this.x = pad; }
+            if (this.x > logicalW - pad) { this.vx = -Math.abs(this.vx) * 0.6; this.x = logicalW - pad; }
+            if (this.y < pad) { this.vy = Math.abs(this.vy) * 0.6; this.y = pad; }
+            if (this.y > logicalH - pad) { this.vy = -Math.abs(this.vy) * 0.6; this.y = logicalH - pad; }
             
-            const targetR = 28 + nodeVol * 85 + flux * 140;
-            this.radius += (targetR - this.radius) * (targetR > this.radius ? 0.25 : 0.08);
+            const targetR = 30 + nodeVol * 90 + flux * 150;
+            this.radius += (targetR - this.radius) * (targetR > this.radius ? 0.3 : 0.08);
         }
         draw(hue) {
             if (!isFinite(this.x) || !isFinite(this.y)) return;
-            // scale(dpr, dpr) しているので論理単位で描画
             const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
-            const intensity = (this.isDragging || currentMode === 'BANG') ? 1.0 : 0.72;
-            g.addColorStop(0, `hsla(${hue}, 80%, 95%, ${intensity})`); 
-            g.addColorStop(0.2, `hsla(${hue}, 70%, 55%, 0.6)`);
-            g.addColorStop(0.7, `hsla(${hue}, 90%, 10%, 0.2)`);
+            const intensity = (this.isDragging || currentMode === 'BANG') ? 1.0 : 0.75;
+            g.addColorStop(0, `hsla(${hue}, 80%, 96%, ${intensity})`); 
+            g.addColorStop(0.25, `hsla(${hue}, 70%, 55%, 0.65)`);
+            g.addColorStop(0.75, `hsla(${hue}, 90%, 12%, 0.2)`);
             g.addColorStop(1, 'transparent');
             ctx.fillStyle = g; ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fill();
         }
@@ -341,28 +348,28 @@
             if (randomPos) { this.x = Math.random() * w; this.y = Math.random() * h; } 
             else { const a = Math.random()*Math.PI*2, d = Math.random()*150; this.x = (w/2) + Math.cos(a)*d; this.y = (h/2) + Math.sin(a)*d; }
             this.z = Math.random() * 2 + 0.5; this.baseAngle = Math.random() * Math.PI * 2;
-            this.speed = (Math.random() * 0.12 + 0.05) / this.z; this.size = Math.random() * 1.5 + 0.5;
-            this.alpha = Math.random() * 0.2 + 0.1; this.flickerS = Math.random() * 0.03 + 0.01; this.vx = 0; this.vy = 0;
+            this.speed = (Math.random() * 0.14 + 0.06) / this.z; this.size = Math.random() * 1.6 + 0.6;
+            this.alpha = Math.random() * 0.25 + 0.12; this.flickerS = Math.random() * 0.03 + 0.01; this.vx = 0; this.vy = 0;
         }
         update(bass) {
             const w = bgCanvas.width/dpr, h = bgCanvas.height/dpr;
             const cx = w / 2, cy = h / 2, t = Date.now() * 0.001;
-            const flowA = t * (0.04 / this.z) + this.baseAngle;
+            const flowA = t * (0.045 / this.z) + this.baseAngle;
             this.x += Math.cos(flowA) * this.speed + this.vx; this.y += Math.sin(flowA) * this.speed + this.vy;
             const dx = this.x - cx, dy = this.y - cy, dist = Math.sqrt(dx*dx + dy*dy) || 1;
-            this.vx += (dx / dist) * bass * 0.4; if (currentMode === 'BANG') { this.vx += (dx/dist)*2.0; }
+            this.vx += (dx / dist) * bass * 0.45; if (currentMode === 'BANG') { this.vx += (dx/dist)*2.5; }
             if (mouse.influence > 0.01) {
                 const mdx = this.x - mouse.globalX, mdy = this.y - mouse.globalY;
                 const mdist = Math.sqrt(mdx*mdx + mdy*mdy) || 1;
-                if (mdist < 250) { const f = (1 - mdist/250) * 3.0 * mouse.influence; this.vx += (mdx/mdist)*f; this.vy += (mdy/mdist)*f; }
+                if (mdist < 260) { const f = (1 - mdist/260) * 3.5 * mouse.influence; this.vx += (mdx/mdist)*f; this.vy += (mdy/mdist)*f; }
             }
             this.vx *= 0.92; this.vy *= 0.92;
-            if (this.x < -100 || this.x > w + 100 || this.y < -100 || this.y > h + 100) this.init(false);
+            if (this.x < -150 || this.x > w + 150 || this.y < -150 || this.y > h + 150) this.init(false);
         }
         draw(hue, bass) {
-            const a = this.alpha + globalVol * 0.2 + bass * 0.4 + Math.sin(Date.now() * this.flickerS) * 0.1;
+            const a = this.alpha + globalVol * 0.25 + bass * 0.45 + Math.sin(Date.now() * this.flickerS) * 0.1;
             bgCtx.fillStyle = `hsla(${hue}, 75%, 90%, ${Math.min(1, a)})`;
-            bgCtx.beginPath(); bgCtx.arc(this.x, this.y, this.size * (1 + bass * 1.5), 0, Math.PI * 2); bgCtx.fill();
+            bgCtx.beginPath(); bgCtx.arc(this.x, this.y, this.size * (1 + bass * 1.8), 0, Math.PI * 2); bgCtx.fill();
         }
     }
 
@@ -380,20 +387,15 @@
     function syncSizes() {
         dpr = window.devicePixelRatio || 1;
         const rect = mount.getBoundingClientRect();
-        
-        // 背景キャンバス設定
         bgCanvas.width = window.innerWidth * dpr; bgCanvas.height = window.innerHeight * dpr;
         bgCanvas.style.width = window.innerWidth + 'px'; bgCanvas.style.height = window.innerHeight + 'px';
-        bgCtx.scale(dpr, dpr);
-
-        // メインキャンバス設定
+        bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
         [canvas, uiCanvas].forEach(c => {
             c.width = rect.width * dpr; c.height = rect.height * dpr;
             c.style.width = rect.width + 'px'; c.style.height = rect.height + 'px';
         });
-        
-        ctx.scale(dpr, dpr);
-        uictx.scale(dpr, dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        uictx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
     function updateMousePos(e) {
@@ -461,16 +463,14 @@
 
     function animate() {
         requestAnimationFrame(animate);
-        if (mouse.active) { mouse.influence += (1 - mouse.influence) * 0.1; } 
-        else { mouse.influence += (0 - mouse.influence) * 0.05; rotateX *= 0.95; rotateY *= 0.95; }
+        if (mouse.active) { mouse.influence += (1 - mouse.influence) * 0.12; } 
+        else { mouse.influence += (0 - mouse.influence) * 0.06; rotateX *= 0.94; rotateY *= 0.94; }
         if (isInitialized && isPlaying && analyser) { 
             analyser.getByteFrequencyData(dataArray); 
             const current = audioCtx.currentTime - startTime;
             if (current > lastEvolutionTime + EVOLUTION_INTERVAL && nodes.length < MAX_NODES) {
-                if (nodes.length < MAX_NODES) {
-                    const p = nodes[Math.floor(Math.random()*nodes.length)];
-                    nodes.push(new SwarmNode(nodes.length, p.x+10, p.y+10));
-                }
+                const p = nodes[Math.floor(Math.random()*nodes.length)];
+                nodes.push(new SwarmNode(nodes.length, p.x+5, p.y+5));
                 lastEvolutionTime = current;
             }
             if (current >= audioBuffer.duration) { isPlaying = false; playPauseBtn.innerText = "Play"; pauseOffset = 0; }
@@ -483,30 +483,30 @@
             globalVol = avg; if (!prevDataArray) prevDataArray = new Uint8Array(256); prevDataArray.set(dataArray);
             const hue = (pIndex / 128) * 360 + (Date.now() * 0.003 % 360);
             if (isInitialized) {
-                mount.style.setProperty('--frame-glow', `hsla(${hue}, 70%, 70%, ${avg * 0.8})`);
-                mount.style.borderColor = `hsla(${hue}, 60%, 80%, ${0.2 + avg * 0.4})`;
-                vignette.style.opacity = 0.35 + avg * 0.55;
+                mount.style.setProperty('--frame-glow', `hsla(${hue}, 70%, 70%, ${avg * 0.9})`);
+                mount.style.borderColor = `hsla(${hue}, 60%, 80%, ${0.2 + avg * 0.5})`;
+                vignette.style.opacity = 0.4 + avg * 0.6;
             }
             if (currentMode !== 'BANG' && isInitialized && isPlaying && fAvg > 0.22) { currentMode = 'BANG'; setTimeout(() => currentMode = 'FLOW', 8000); }
             
-            ctx.clearRect(0,0,canvas.width/dpr, canvas.height/dpr);
+            const rect = mount.getBoundingClientRect();
+            ctx.clearRect(0,0,rect.width, rect.height);
             bgCtx.clearRect(0,0,window.innerWidth, window.innerHeight);
-            uictx.clearRect(0,0,uiCanvas.width/dpr, uiCanvas.height/dpr);
+            uictx.clearRect(0,0,rect.width, rect.height);
             
             particles.forEach(p => { p.update(bassAvg); p.draw(hue, bassAvg); });
             mount.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
             nodeDisplay.innerText = `NODES: ${nodes.length}`;
             nodes.forEach((n, i) => { n.update(isInitialized ? dataArray[i%32]/255 : 0, fAvg, nodes); n.draw(hue); });
             
-            // --- イコライザー修正：HUDの横に配置（視認性確保） ---
+            // --- イコライザー修正：HUDの横に絶妙な余白で配置 ---
             uictx.save();
-            const barCount = 20, barGap = 10, barW = 1.5;
-            const logicalW = uiCanvas.width / dpr; const logicalH = uiCanvas.height / dpr;
-            const startX = logicalW / 2 - (barCount * barGap) / 2;
-            const baselineY = 45; // 画面上部HUDの少し下
+            const barCount = 18, barGap = 12, barW = 1.2;
+            const startX = (rect.width / 2) - (barCount * barGap / 2);
+            const baselineY = 48; 
             for (let i = 0; i < barCount; i++) {
-                const h = (dataArray[i] / 255) * 40; if (h <= 0) continue;
-                uictx.fillStyle = `hsla(${hue}, 80%, 90%, 0.4)`;
+                const h = (dataArray[i] / 255) * 35; if (h <= 0) continue;
+                uictx.fillStyle = `hsla(${hue}, 80%, 90%, 0.45)`;
                 uictx.fillRect(startX + i * barGap, baselineY, barW, h);
             }
             uictx.restore();
