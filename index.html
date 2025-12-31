@@ -31,7 +31,7 @@
             transition: background-color 1.5s ease;
         }
 
-        /* --- フィルムグレイン（最前面） --- */
+        /* --- フィルムグレイン --- */
         body::after {
             content: "";
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -39,7 +39,7 @@
             pointer-events: none; z-index: 100;
         }
 
-        /* --- セクション表示アニメーション --- */
+        /* --- アニメーション --- */
         .reveal {
             opacity: 0;
             transform: translateY(50px);
@@ -68,10 +68,10 @@
         }
         .keep-together { display: inline-block; white-space: nowrap; }
 
-        /* --- レイヤー設計（最重要） --- */
+        /* --- レイヤー設計（パーティクルを最背面に固定） --- */
         #background-layer {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1; /* 完全に背面へ */
+            z-index: -1; 
             pointer-events: none;
             background: #000;
         }
@@ -79,7 +79,7 @@
         #vignette {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at center, transparent 10%, rgba(0,0,0,1) 160%);
-            z-index: 1; /* パーティクルのすぐ上 */
+            z-index: 1; 
             pointer-events: none;
         }
 
@@ -103,8 +103,7 @@
             z-index: 15;
             overflow: hidden;
             border: 1px solid var(--glass-border);
-            /* 完全不透明な背景で背後を遮断 */
-            background: #000004; 
+            background: #000004; /* 不透明背景で背後を遮蔽 */
             border-radius: 20px;
             box-shadow: 0 0 150px rgba(0, 0, 0, 0.8);
             transform-style: preserve-3d;
@@ -120,12 +119,11 @@
             #visualizer-mount.ratio-4-5 { width: 92vw; height: 135vw; } 
             section { padding: 140px 24px; }
             .btn-zen { padding: 15px 18px; font-size: 8px; }
-            h1 { line-height: 1.0; }
         }
 
         #fluid-engine {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            filter: blur(20px) contrast(150) brightness(1.1);
+            filter: blur(18px) contrast(150) brightness(1.1);
             pointer-events: none; z-index: 2;
         }
 
@@ -135,13 +133,6 @@
             margin-top: 80px; display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; z-index: 30;
             max-width: 95vw;
         }
-
-        /* --- UI Components --- */
-        .guide-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 100px; margin-top: 140px; }
-        .guide-item { padding: 0 0 60px 0; border-bottom: 1px solid var(--glass-border); transition: 0.5s; }
-        .guide-num { font-family: 'JetBrains+Mono', monospace; color: var(--accent); font-size: 0.9rem; margin-bottom: 35px; display: block; opacity: 0.4; }
-        .guide-item h3 { font-size: 1.0rem; margin-bottom: 30px; color: #fff; letter-spacing: 0.4em; }
-        .guide-item p { font-size: 0.9rem; line-height: 2.4; }
 
         .btn-zen {
             font-family: 'JetBrains+Mono', monospace; font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase;
@@ -180,7 +171,7 @@
         </p>
     </div>
 
-    <!-- Installation Frame -->
+    <!-- Main Visualizer -->
     <div id="visualizer-mount" class="ratio-16-9">
         <div class="mount-hud">
             <div id="display-title">Bio-Void Standby</div>
@@ -190,7 +181,7 @@
         <div id="fluid-engine"><canvas id="art-canvas"></canvas></div>
     </div>
 
-    <!-- Interface -->
+    <!-- Controls -->
     <div class="hero-controls">
         <button class="btn-zen active" id="play-pause-btn" onclick="togglePlayback()">Play</button>
         <button class="btn-zen" onclick="loadSample('track1.mp3', 'コーヒーの湯気')">Coffee Steam</button>
@@ -205,21 +196,22 @@
 <section id="how-to" class="reveal">
     <div class="container">
         <h2>System Interaction / <span class="keep-together">操作体系</span></h2>
-        <div class="guide-grid">
-            <div class="guide-item">
-                <span class="guide-num">01</span>
-                <h3>Invoke Sound / <span class="keep-together">音楽を呼び覚ます</span></h3>
-                <p><span class="keep-together">ライブラリから曲を選び、</span><span class="keep-together">静寂に包まれた水槽に</span><span class="keep-together">生命を宿してください。</span></p>
+        <p style="margin-bottom: 50px; opacity: 0.5;">音と重力の物理学による没入型インターフェース</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 60px;">
+            <div style="padding-bottom: 30px; border-bottom: 1px solid var(--glass-border);">
+                <div style="color: var(--accent); font-family: 'JetBrains+Mono', monospace; margin-bottom: 20px;">01</div>
+                <h3>Invoke / 喚起</h3>
+                <p style="font-size: 0.85rem;">音楽を読み込み、静寂を生命で満たしてください。</p>
             </div>
-            <div class="guide-item">
-                <span class="guide-num">02</span>
-                <h3>Manipulate Fluid / <span class="keep-together">流体をかき混ぜる</span></h3>
-                <p><span class="keep-together">画面内のスライムを</span><span class="keep-together">ドラッグしてかき混ぜます。</span><span class="keep-together">物理演算による粘性を</span><span class="keep-together">体験できます。</span></p>
+            <div style="padding-bottom: 30px; border-bottom: 1px solid var(--glass-border);">
+                <div style="color: var(--accent); font-family: 'JetBrains+Mono', monospace; margin-bottom: 20px;">02</div>
+                <h3>Stir / 攪拌</h3>
+                <p style="font-size: 0.85rem;">ドラッグ操作により流体としての粘性を直接操ります。</p>
             </div>
-            <div class="guide-item">
-                <span class="guide-num">03</span>
-                <h3>Observe Evolution / <span class="keep-together">進化を観察する</span></h3>
-                <p><span class="keep-together">旋律のエネルギーが高まると、</span><span class="keep-together">核は最大16個まで自己分裂し、</span><span class="keep-together">群れをなして泳ぎ回ります。</span></p>
+            <div style="padding-bottom: 30px; border-bottom: 1px solid var(--glass-border);">
+                <div style="color: var(--accent); font-family: 'JetBrains+Mono', monospace; margin-bottom: 20px;">03</div>
+                <h3>Incline / 傾斜</h3>
+                <p style="font-size: 0.85rem;">スマホの傾きに合わせて発生する擬似重力で空間を制御します。</p>
             </div>
         </div>
     </div>
@@ -231,7 +223,7 @@
 
 <script>
     /**
-     * CODEQUARIUM CORE ENGINE - Occlusion & Layer Fix Version
+     * CODEQUARIUM CORE ENGINE - Refined Particle Size & Layering
      */
     const bgCanvas = document.getElementById('background-layer');
     const canvas = document.getElementById('art-canvas');
@@ -373,8 +365,10 @@
             if (randomPos) { this.x = Math.random() * w; this.y = Math.random() * h; } 
             else { const a = Math.random()*Math.PI*2, d = Math.random()*180; this.x = (w/2) + Math.cos(a)*d; this.y = (h/2) + Math.sin(a)*d; }
             this.z = Math.random() * 2.5 + 0.5; this.baseAngle = Math.random() * Math.PI * 2;
-            this.speed = (Math.random() * 0.16 + 0.08) / this.z; this.size = Math.random() * 2.0 + 0.6;
-            this.alpha = Math.random() * 0.3 + 0.15; this.flickerS = Math.random() * 0.05 + 0.01; this.vx = 0; this.vy = 0;
+            this.speed = (Math.random() * 0.16 + 0.08) / this.z; 
+            // --- 【修正】基本サイズを大幅に縮小 ---
+            this.size = Math.random() * 0.8 + 0.3; 
+            this.alpha = Math.random() * 0.2 + 0.1; this.flickerS = Math.random() * 0.05 + 0.01; this.vx = 0; this.vy = 0;
         }
         update(bass) {
             const w = window.innerWidth; const h = window.innerHeight;
@@ -383,7 +377,8 @@
             this.x += Math.cos(t * (0.05 / this.z) + this.baseAngle) * this.speed + this.vx; 
             this.y += Math.sin(t * (0.05 / this.z) + this.baseAngle) * this.speed + this.vy;
             const dx = this.x - cx, dy = this.y - cy, dist = Math.sqrt(dx*dx + dy*dy) || 1;
-            this.vx += (dx / dist) * bass * 0.55; if (currentMode === 'BANG') { this.vx += (dx/dist)*3.5; }
+            // 低音への反応も控えめに
+            this.vx += (dx / dist) * bass * 0.25; 
             if (mouse.influence > 0.01) {
                 const mdx = this.x - mouse.globalX, mdy = this.y - mouse.globalY;
                 const mdist = Math.sqrt(mdx*mdx + mdy*mdy) || 1;
@@ -393,10 +388,11 @@
             if (this.x < -200 || this.x > w + 200 || this.y < -200 || this.y > h + 200) this.init(false);
         }
         draw(hue, bass) {
-            const pulse = bass * 1.5;
-            const a = this.alpha + globalVol * 0.35 + pulse * 0.6 + Math.sin(Date.now() * this.flickerS) * 0.2;
-            bgCtx.fillStyle = `hsla(${hue}, 80%, 94%, ${Math.min(1, a)})`;
-            bgCtx.beginPath(); bgCtx.arc(this.x, this.y, (this.size + pulse) * (1 + bass * 2), 0, Math.PI * 2); bgCtx.fill();
+            // --- 【修正】膨張率を抑え、繊細な発光に ---
+            const pulse = bass * 0.8; 
+            const a = this.alpha + globalVol * 0.2 + pulse * 0.3 + Math.sin(Date.now() * this.flickerS) * 0.1;
+            bgCtx.fillStyle = `hsla(${hue}, 80%, 94%, ${Math.min(0.8, a)})`;
+            bgCtx.beginPath(); bgCtx.arc(this.x, this.y, (this.size + pulse) * (1 + bass * 0.5), 0, Math.PI * 2); bgCtx.fill();
         }
     }
 
